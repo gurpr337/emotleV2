@@ -346,7 +346,7 @@
         }
 
         .hidden {
-            display: none !important;
+            display: none !important; /* Re-added !important for proper modal hiding */
         }
 
         /* The original submit button is now hidden */
@@ -361,6 +361,54 @@
             color: #ffffff;
             font-weight: bold;
             /* Removed background, padding, border-radius, box-shadow */
+        }
+
+        /* Share button styling */
+        .share-button {
+            background-color: #6aaa64; /* Green for share */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px; /* Spacing from stats */
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+            display: block; /* Make it a block element */
+            width: fit-content; /* Fit content */
+            margin-left: auto; /* Center the button */
+            margin-right: auto; /* Center the button */
+        }
+
+        .share-button:hover {
+            background-color: #5d975a;
+        }
+        .share-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+        }
+
+        /* Clipboard message styling */
+        .clipboard-message {
+            font-size: 0.9em;
+            color: #87CEEB; /* Blueish to indicate success */
+            margin-top: 10px;
+            opacity: 0; /* Starts hidden */
+            transition: opacity 0.3s ease-in-out; /* For smooth fade */
+            pointer-events: none; /* Do not block clicks when invisible */
+            position: absolute; /* Position relative to viewport */
+            top: 50%; /* Vertically center */
+            left: 50%; /* Horizontally center */
+            transform: translate(-50%, -50%); /* Adjust for element's own size */
+            white-space: nowrap; /* Keep text on one line */
+            background-color: rgba(0, 0, 0, 0.7); /* Small background for better visibility */
+            padding: 8px 15px;
+            border-radius: 5px;
+            z-index: 1001; /* Ensure it's above other elements but below modal overlay */
+        }
+        .clipboard-message.show {
+            opacity: 1; /* Fade in */
         }
 
 
@@ -444,12 +492,14 @@
             .key {
                 padding: 7px 2px; /* Further adjusted padding for smaller keys */
                 font-size: 0.7em; /* Adjusted font size for smaller keys */
+                /* Removed min-width, allowing flex-grow to handle scaling */
             }
             .keyboard-row {
                 gap: 2px; /* Even smaller gap for very small screens */
             }
             .key.large {
                 padding: 7px 5px; /* Further adjusted padding for large keys */
+                /* Removed min-width */
             }
             .emoji-phrase {
                 font-size: 2.2em;
@@ -506,6 +556,10 @@
             animation: fadeInScale 0.3s forwards ease-out;
             max-height: 80vh;
             overflow-y: auto;
+            display: flex; /* Use flexbox for modal content */
+            flex-direction: column; /* Stack children vertically */
+            align-items: center; /* Center horizontally */
+            justify-content: flex-start; /* Align to start vertically */
         }
 
         @keyframes fadeInScale {
@@ -546,6 +600,28 @@
         }
         .modal-close-button:hover {
             color: #ffffff;
+        }
+
+        /* Share button styling for the modal */
+        #shareButton {
+            background-color: #6aaa64; /* Green for share */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px; /* Spacing from stats */
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+        }
+
+        #shareButton:hover {
+            background-color: #5d975a;
+        }
+        #shareButton:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
         }
 
         /* How to Play specific styles */
@@ -615,6 +691,10 @@
         <!-- Countdown Timer -->
         <div id="countdown-timer" class="hidden"></div>
 
+        <!-- Share button for the main page -->
+        <button id="mainShareButton" class="share-button hidden">Share Results</button>
+        <span id="mainClipboardMessage" class="clipboard-message">Copied to clipboard!</span>
+
         <!-- Display area for the daily emoji phrase -->
         <div class="emoji-phrase" id="emoji-display"></div>
         
@@ -682,6 +762,8 @@
                 <p>Avg. Guesses per Win: <strong id="avgGuessesStat"></strong></p>
             </div>
             <p id="nextPuzzleInfo" style="margin-top: 20px; font-size: 1.1em;"></p>
+            <button id="shareButton" class="share-button">Share Results</button>
+            <span id="clipboardMessage" class="clipboard-message">Copied to clipboard!</span>
         </div>
     </div>
 
@@ -798,7 +880,7 @@
             { emoji: "🍄", answer: "MUSHROOM" },
             { emoji: "🥒", answer: "CUCUMBER" },
             { emoji: "🥜", answer: "PEANUTS" },
-            { emoji: "🍯", answer: "HONEY" },
+            { emoji: "�", answer: "HONEY" },
             { emoji: "🧂", answer: "SALT" },
             { emoji: "🍪", answer: "COOKIE" },
             { emoji: "🎂", answer: "CAKE" },
@@ -896,7 +978,7 @@
             { emoji: "🛁", answer: "BATHTUB" },
 
             // Professions/People (20)
-            { emoji: "👨‍�", answer: "CHEF" },
+            { emoji: "👨‍🍳", answer: "CHEF" },
             { emoji: "👩‍⚕️", answer: "DOCTOR" },
             { emoji: "👨‍💻", answer: "PROGRAMMER" },
             { emoji: "👩‍🏫", answer: "TEACHER" },
@@ -1108,6 +1190,8 @@
         const avgGuessesStat = document.getElementById('avgGuessesStat');
         const nextPuzzleInfo = document.getElementById('nextPuzzleInfo');
         const statsModalCloseButton = document.getElementById('statsModalCloseButton');
+        const shareButton = document.getElementById('shareButton');
+        const clipboardMessage = document.getElementById('clipboardMessage');
 
         const howToPlayModal = document.getElementById('howToPlayModal');
         const howToPlayModalCloseButton = document.getElementById('howToPlayModalCloseButton');
@@ -1115,6 +1199,10 @@
         // Header buttons
         const statsButton = document.getElementById('statsButton');
         const howToPlayButton = document.getElementById('howToPlayButton');
+
+        // New elements for main page share button
+        const mainShareButton = document.getElementById('mainShareButton');
+        const mainClipboardMessage = document.getElementById('mainClipboardMessage');
 
 
         /**
@@ -1174,6 +1262,47 @@
         }
 
         /**
+         * Returns the current game number based on the epoch start date.
+         * @returns {number} The current game number.
+         */
+        function getGameNumber() {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
+            const diffTime = Math.abs(today.getTime() - EPOCH_START_DATE.getTime());
+            const diffDays = Math.floor(diffTime / MS_PER_DAY);
+            return diffDays + 1; // +1 to make it 1-indexed
+        }
+
+        /**
+         * Generates the shareable text for the game results.
+         * @param {boolean} wonGame - True if the game was won, false otherwise.
+         * @param {number} guessesTaken - The number of guesses taken.
+         * @param {Array<Object>} pastGuesses - Array of past guesses with their letter states.
+         * @returns {string} The formatted string to be shared.
+         */
+        function generateShareResults(wonGame, guessesTaken, pastGuesses) {
+            const gameNumber = getGameNumber();
+            const guessCount = wonGame ? guessesTaken : 'X';
+            let shareText = `Emotle #${gameNumber} ${guessCount}/${NUM_GUESSES}\n\n`;
+
+            pastGuesses.forEach(guessEntry => {
+                const rowEmojis = guessEntry.letterStates.map(state => {
+                    if (state === 'correct') {
+                        return '🟦'; // Blue square for correct
+                    } else if (state === 'present') {
+                        return '🟥'; // Red square for present (matching pink color in game)
+                    } else {
+                        return '⬛'; // Black square for absent (matching grey color in game)
+                    }
+                }).join('');
+                shareText += rowEmojis + '\n';
+            });
+            shareText += "\nPlay Emotle.com"; // Changed to .com
+            return shareText;
+        }
+
+
+        /**
          * Saves the current game state to local storage.
          * Includes the emoji phrase, guesses made, remaining attempts, and keyboard state.
          */
@@ -1220,6 +1349,8 @@
                         guessesGrid.style.opacity = '0.5';
                         showMessage('You\'ve played today\'s Emotle. Next puzzle unlocks soon!', 'info');
                         startCountdown();
+                        mainShareButton.classList.remove('hidden'); // Show main share button
+                        mainShareButton.style.display = 'block';
                     } else {
                         // Game in progress, ensure it's interactable
                         gameEnded = false;
@@ -1228,6 +1359,7 @@
                         emojiDisplay.style.opacity = '1';
                         guessesGrid.style.opacity = '1';
                         stopCountdown();
+                        mainShareButton.classList.add('hidden'); // Hide main share button
                     }
                     return true;
                 }
@@ -1297,6 +1429,7 @@
                 // Ensure keyboard display is updated for the new game
                 updateKeyboardDisplay();
                 stopCountdown(); // Stop countdown if starting a new game
+                mainShareButton.classList.add('hidden'); // Ensure main share button is hidden
             }
             
             // Create initial empty guess rows (or fill if loaded).
@@ -1323,11 +1456,14 @@
                 keyboard.style.opacity = '0.5';
                 emojiDisplay.style.opacity = '0.5';
                 guessesGrid.style.opacity = '0.5';
+                mainShareButton.classList.remove('hidden'); // Show main share button if game is ended
+                mainShareButton.style.display = 'block';
             } else {
                 keyboard.style.pointerEvents = 'auto';
                 keyboard.style.opacity = '1';
                 emojiDisplay.style.opacity = '1';
                 guessesGrid.style.opacity = '1';
+                mainShareButton.classList.add('hidden'); // Hide main share button if game is ongoing
             }
 
             guessInput.focus(); 
@@ -1348,14 +1484,13 @@
             if (!currentRow) return;
 
             const letterBoxes = currentRow.querySelectorAll('.letter-box');
-            for (let i = 0; i < correctAnswerLength; i++) {
-                if (i < inputString.length) {
-                    letterBoxes[i].textContent = inputString[i].toUpperCase();
-                    letterBoxes[i].style.borderColor = '#999'; // Indicate active input
-                } else {
-                    letterBoxes[i].textContent = '';
-                    letterBoxes[i].style.borderColor = '#5a5a5a'; // Reset to default
-                }
+            for (let i = 0; i < inputString.length; i++) {
+                letterBoxes[i].textContent = inputString[i].toUpperCase();
+                letterBoxes[i].style.borderColor = '#999'; // Indicate active input
+            }
+            for (let i = inputString.length; i < correctAnswerLength; i++) {
+                letterBoxes[i].textContent = '';
+                letterBoxes[i].style.borderColor = '#5a5a5a'; // Reset to default
             }
         }
 
@@ -1496,7 +1631,10 @@
             guessesGrid.style.opacity = '0.5';
             
             const stats = updateStats(won, guessesTaken); // This line calls updateStats
-            showStatsModal(won, stats);
+            showStatsModal(won, stats); // Pass 'won' status to modal
+
+            mainShareButton.classList.remove('hidden'); // Show main share button
+            mainShareButton.style.display = 'block';
         }
 
         /**
@@ -1511,22 +1649,25 @@
                 stats = loadStats();
             }
 
+            // Determine if the game was won for modal title and share button logic
+            let wasGameWon;
             if (typeof won === 'boolean') { // Game just ended (win or loss)
+                wasGameWon = won;
                 modalTitle.textContent = won ? '🎉 You Won! 🎉' : `Game Over! The answer was "${currentEmojiPhrase.answer}".`;
                 modalTitle.classList.remove('win-message', 'lose-message');
                 modalTitle.classList.add(won ? 'win-message' : 'lose-message');
                 startCountdown(); // Start countdown only if game officially ended
             } else if (gameEnded) { // Game was already ended (e.g., page reload after win/loss)
-                // Determine if it was a win or loss based on pastGuessesData and correct answer
-                const wasWon = pastGuessesData.some(g => g.word === currentEmojiPhrase.answer);
-                modalTitle.textContent = wasWon ? '🎉 You Won! 🎉' : `Game Over! The answer was "${currentEmojiPhrase.answer}".`;
+                wasGameWon = pastGuessesData.some(g => g.word === currentEmojiPhrase.answer);
+                modalTitle.textContent = wasGameWon ? '🎉 You Won! 🎉' : `Game Over! The answer was "${currentEmojiPhrase.answer}".`;
                 modalTitle.classList.remove('win-message', 'lose-message');
-                modalTitle.classList.add(wasWon ? 'win-message' : 'lose-message');
+                modalTitle.classList.add(wasGameWon ? 'win-message' : 'lose-message');
                 startCountdown(); // Resume countdown if it was an ended game
             }
             else { // Game is ongoing, user just clicked stats button
                 modalTitle.textContent = 'Your Game Statistics';
                 modalTitle.classList.remove('win-message', 'lose-message');
+                wasGameWon = null; // Game is ongoing, not won or lost yet
                 stopCountdown(); // Ensure countdown is not running if game is ongoing
             }
 
@@ -1536,6 +1677,14 @@
 
             nextPuzzleInfo.textContent = 'Come back tomorrow for a new puzzle!';
             
+            // Only show share button if game has ended
+            if (gameEnded) {
+                shareButton.style.display = 'block';
+            } else {
+                shareButton.style.display = 'none';
+            }
+            clipboardMessage.classList.remove('show'); // Hide message when modal opens
+
             gameOverModal.classList.remove('hidden');
         }
 
@@ -1608,6 +1757,46 @@
             countdownTimerDisplay.classList.add('hidden');
         }
 
+        /**
+         * Generic function to copy text to clipboard and show a message.
+         * @param {string} textToCopy - The text to copy to the clipboard.
+         * @param {HTMLElement} messageElement - The element to display the "Copied" message.
+         */
+        function copyToClipboardAndShowMessage(textToCopy, messageElement) {
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed'; // Avoid scrolling to bottom
+            textarea.style.opacity = '0'; // Hide textarea
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    messageElement.textContent = 'Copied to clipboard!';
+                    messageElement.classList.add('show'); // Triggers fade-in
+                    setTimeout(() => {
+                        messageElement.classList.remove('show'); // Triggers fade-out
+                    }, 2000); // Message is fully visible for 2 seconds, then starts fading out
+                } else {
+                    messageElement.textContent = 'Copy failed. Please copy manually.';
+                    messageElement.classList.add('show');
+                    setTimeout(() => {
+                        messageElement.classList.remove('show');
+                    }, 3000); // Longer display for error message
+                }
+            } catch (err) {
+                messageElement.textContent = 'Copy failed: ' + err;
+                messageElement.classList.add('show');
+                setTimeout(() => {
+                    messageElement.classList.remove('show');
+                }, 3000);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
 
         // --- Event Listeners ---
 
@@ -1675,6 +1864,20 @@
         // Event listeners for the new header icon buttons
         statsButton.addEventListener('click', () => showStatsModal(undefined, loadStats())); 
         howToPlayButton.addEventListener('click', showHowToPlayModal);
+
+        // Event listener for Share button in the modal
+        shareButton.addEventListener('click', () => {
+            const wasWon = pastGuessesData.some(g => g.word === currentEmojiPhrase.answer);
+            const shareText = generateShareResults(wasWon, guessesTakenInCurrentGame, pastGuessesData);
+            copyToClipboardAndShowMessage(shareText, clipboardMessage);
+        });
+
+        // Event listener for Share button on the main page
+        mainShareButton.addEventListener('click', () => {
+            const wasWon = pastGuessesData.some(g => g.word === currentEmojiPhrase.answer);
+            const shareText = generateShareResults(wasWon, guessesTakenInCurrentGame, pastGuessesData);
+            copyToClipboardAndShowMessage(shareText, mainClipboardMessage);
+        });
 
 
         // Initialize the game when the entire HTML document has been loaded and parsed
