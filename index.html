@@ -391,23 +391,23 @@
                 gap: 4px; /* Further reduced */
             }
             .key {
-                padding: 10px 6px; /* Increased padding */
-                font-size: 0.9em; /* Increased font size */
-                border-radius: 5px; /* Slightly larger border radius */
-                min-width: 32px; /* Ensure a minimum size for letter keys */
+                padding: 10px 4px; /* Adjusted padding for better mobile fit */
+                font-size: 0.9em;
+                min-width: unset; /* Allow flexibility */
+                border-radius: 5px;
                 box-shadow: 0px 3px 0px 0px rgba(170,170,170,0.4), 0px 5px 5px -3px rgba(0,0,0,0.5);
-                border-bottom: 2px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
+                border-bottom: 2px solid rgba(100,100,100,0.5);
             }
             .key:active {
                 box-shadow: 0px 1px 0px 0px rgba(170,170,170,0.4), 0px 2px 2px -1px rgba(0,0,0,0.5);
-                border-bottom: 1px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
+                border-bottom: 1px solid rgba(100,100,100,0.5);
             }
             .keyboard-row {
-                gap: 4px; /* Adjusted gap */
+                gap: 3px; /* Slightly reduced gap on mobile to save space */
             }
             .key.large {
-                min-width: 50px; /* Increased min-width */
-                padding: 10px 10px; /* Increased padding */
+                padding: 10px 8px; /* Adjusted padding for large keys */
+                min-width: unset; /* Allow flexibility */
             }
             /* Responsive specific styles for Submit key */
             .key[data-key="enter"] {
@@ -422,49 +422,61 @@
             }
 
             .icon-button {
-                width: 35px; /* 30% bigger than 27px base for mobile */
-                height: 35px; /* 30% bigger than 27px base for mobile */
-                margin: 0; /* Rely on parent gap for responsive */
+                width: 35px;
+                height: 35px;
+                margin: 0;
             }
             .icon-button svg {
-                width: 19.5px; /* 30% bigger than 15px base for mobile */
-                height: 19.5px; /* 30% bigger than 15px base for mobile */
+                width: 19.5px;
+                height: 19.5px;
             }
         }
 
         @media (max-width: 400px) {
             .letter-box {
-                width: 32px; /* Even smaller */
-                height: 32px; /* Even smaller */
+                width: 32px;
+                height: 32px;
                 font-size: 1.1em;
             }
             .guess-row {
-                gap: 3px; /* Even smaller gap */
+                gap: 3px;
             }
             .key {
-                padding: 8px 3px; /* Increased padding, adjusted for smaller width */
-                font-size: 0.75em; /* Increased font size */
-                min-width: 28px; /* Ensure a minimum size for letter keys on very small screens */
+                padding: 7px 2px; /* Further adjusted padding for smaller keys */
+                font-size: 0.7em; /* Adjusted font size for smaller keys */
             }
             .keyboard-row {
-                gap: 2px;
+                gap: 2px; /* Even smaller gap for very small screens */
             }
             .key.large {
-                min-width: 40px; /* Increased min-width */
-                padding: 8px 8px; /* Adjusted padding */
+                padding: 7px 5px; /* Further adjusted padding for large keys */
             }
             .emoji-phrase {
                 font-size: 2.2em;
             }
             .icon-button {
-                width: 31px; /* 30% bigger than 24px base for tiny screens (24 * 1.3 = 31.2) */
-                height: 31px; /* 30% bigger than 24px base for tiny screens */
+                width: 31px;
+                height: 31px;
             }
             .icon-button svg {
-                width: 17.5px; /* 30% bigger than 13.5px base for tiny screens (13.5 * 1.3 = 17.55) */
-                height: 17.5px; /* 30% bigger than 13.5px base for tiny screens */
+                width: 17.5px;
+                height: 17.5px;
             }
         }
+
+        @media (max-width: 320px) {
+            .key {
+                padding: 6px 1px; /* Even smaller padding for extremely small screens */
+                font-size: 0.65em; /* Even smaller font size */
+            }
+            .key.large {
+                padding: 6px 4px; /* Adjusted padding for large keys on smallest screens */
+            }
+            .keyboard-row {
+                gap: 1px; /* Minimal gap for very tight spaces */
+            }
+        }
+
 
         /* Modal specific styles */
         .modal-overlay {
@@ -477,23 +489,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000; /* Ensure it's on top */
+            z-index: 1000;
         }
 
         .modal-content {
-            background-color: #2a2a2c; /* Slightly lighter than body background */
+            background-color: #2a2a2c;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
             text-align: center;
-            max-width: 80%; /* Responsive width */
+            max-width: 80%;
             color: #e0e0e0;
             position: relative;
-            transform: scale(0.8); /* Start slightly smaller for animation */
-            opacity: 0; /* Start hidden for animation */
-            animation: fadeInScale 0.3s forwards ease-out; /* Animation on display */
-            max-height: 80vh; /* Limit height for scrollable content */
-            overflow-y: auto; /* Enable scrolling for modal content */
+            transform: scale(0.8);
+            opacity: 0;
+            animation: fadeInScale 0.3s forwards ease-out;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         @keyframes fadeInScale {
@@ -574,8 +586,8 @@
             font-size: 1.2em;
             border-radius: 5px;
         }
-        .modal-instructions .example-box.correct { background-color: #87CEEB; border-color: #87CEEB; } /* Sky Blue */
-        .modal-instructions .example-box.present { background-color: #FF99AA; border-color: #FF99AA; } /* More saturated pink */
+        .modal-instructions .example-box.correct { background-color: #87CEEB; border-color: #87CEEB; }
+        .modal-instructions .example-box.present { background-color: #FF99AA; border-color: #FF99AA; }
         .modal-instructions .example-box.absent { background-color: #787c7e; border-color: #787c7e; }
 
     </style>
@@ -646,7 +658,7 @@
                 <div class="key empty" style="flex-basis: 0.5; visibility: hidden;"></div>
             </div>
             <div class="keyboard-row">
-                <div class="key large" data-key="enter">Submit</div> <!-- Changed text to Submit -->
+                <div class="key large" data-key="enter">Submit</div>
                 <div class="key" data-key="z">Z</div>
                 <div class="key" data-key="x">X</div>
                 <div class="key" data-key="c">C</div>
@@ -884,7 +896,7 @@
             { emoji: "🛁", answer: "BATHTUB" },
 
             // Professions/People (20)
-            { emoji: "👨‍🍳", answer: "CHEF" },
+            { emoji: "👨‍�", answer: "CHEF" },
             { emoji: "👩‍⚕️", answer: "DOCTOR" },
             { emoji: "👨‍💻", answer: "PROGRAMMER" },
             { emoji: "👩‍🏫", answer: "TEACHER" },
@@ -898,7 +910,7 @@
             { emoji: "🧑‍✈️", answer: "PILOT" },
             { emoji: "🧑‍🚒", answer: "FIREFIGHT" },
             { emoji: "🧑‍🏭", answer: "WORKER" },
-            { emoji: "🧑‍�", answer: "FARMER" },
+            { emoji: "🧑‍🌾", answer: "FARMER" },
             { emoji: "🧑‍🔧", answer: "MECHANIC" },
             { emoji: "🧑‍🔬", answer: "SCIENTIST" },
             { emoji: "🧑‍⚖️", answer: "JUDGE" },
