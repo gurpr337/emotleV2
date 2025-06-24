@@ -394,8 +394,7 @@
                 padding: 10px 6px; /* Increased padding */
                 font-size: 0.9em; /* Increased font size */
                 border-radius: 5px; /* Slightly larger border radius */
-                min-width: unset;
-                /* Adjust shadow for smaller keys */
+                min-width: 32px; /* Ensure a minimum size for letter keys */
                 box-shadow: 0px 3px 0px 0px rgba(170,170,170,0.4), 0px 5px 5px -3px rgba(0,0,0,0.5);
                 border-bottom: 2px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
             }
@@ -410,16 +409,6 @@
                 min-width: 50px; /* Increased min-width */
                 padding: 10px 10px; /* Increased padding */
             }
-            #message {
-                font-size: 1.1em;
-                padding: 8px 12px;
-            }
-            button {
-                padding: 8px 16px;
-                font-size: 0.9em;
-                margin-top: 15px;
-            }
-
             /* Responsive specific styles for Submit key */
             .key[data-key="enter"] {
                 box-shadow: 0px 3px 0px 0px rgba(60, 90, 120, 0.8),
@@ -455,6 +444,7 @@
             .key {
                 padding: 8px 3px; /* Increased padding, adjusted for smaller width */
                 font-size: 0.75em; /* Increased font size */
+                min-width: 28px; /* Ensure a minimum size for letter keys on very small screens */
             }
             .keyboard-row {
                 gap: 2px;
@@ -731,7 +721,7 @@
         // All answers are 10 characters or less, and emojis are pure emoji.
         const emojiPhrases = [
             // Animals (30)
-            { emoji: "�", answer: "DOG" },
+            { emoji: "🐶", answer: "DOG" },
             { emoji: "🐱", answer: "CAT" },
             { emoji: "🐻", answer: "BEAR" },
             { emoji: "🦊", answer: "FOX" },
@@ -908,7 +898,7 @@
             { emoji: "🧑‍✈️", answer: "PILOT" },
             { emoji: "🧑‍🚒", answer: "FIREFIGHT" },
             { emoji: "🧑‍🏭", answer: "WORKER" },
-            { emoji: "🧑‍🌾", answer: "FARMER" },
+            { emoji: "🧑‍�", answer: "FARMER" },
             { emoji: "🧑‍🔧", answer: "MECHANIC" },
             { emoji: "🧑‍🔬", answer: "SCIENTIST" },
             { emoji: "🧑‍⚖️", answer: "JUDGE" },
