@@ -18,7 +18,7 @@
             background-color: #1a1a1b; /* Dark background for Wordle feel */
             margin: 0;
             padding: 10px; /* Reduced padding slightly */
-            box-sizing: border-box; /* Changed from 'border' to 'border-box' for correct box model */
+            box-sizing: border-box;
             color: #e0e0e0; /* Light text for contrast */
             overflow-y: auto; /* Allow scrolling on smaller screens if content overflows */
         }
@@ -125,7 +125,7 @@
         .guesses-grid {
             display: flex;
             flex-direction: column;
-            gap: 6px; /* Reduced gap */
+            gap: 4px; /* Reduced gap for less vertical space */
             margin-bottom: 15px; /* Adjusted margin */
             min-height: 200px; /* Adjusted min-height */
             max-height: 300px; /* Adjusted max-height */
@@ -139,7 +139,7 @@
             gap: 5px; /* Reduced gap */
             justify-content: center;
             width: 100%;
-            padding: 3px 0; /* Reduced padding */
+            padding: 2px 0; /* Reduced padding for less vertical space */
         }
 
         /* Styles for individual letter boxes */
@@ -391,9 +391,9 @@
                 gap: 4px; /* Further reduced */
             }
             .key {
-                padding: 8px 4px;
-                font-size: 0.8em;
-                border-radius: 4px;
+                padding: 10px 6px; /* Increased padding */
+                font-size: 0.9em; /* Increased font size */
+                border-radius: 5px; /* Slightly larger border radius */
                 min-width: unset;
                 /* Adjust shadow for smaller keys */
                 box-shadow: 0px 3px 0px 0px rgba(170,170,170,0.4), 0px 5px 5px -3px rgba(0,0,0,0.5);
@@ -404,11 +404,11 @@
                 border-bottom: 1px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
             }
             .keyboard-row {
-                gap: 3px;
+                gap: 4px; /* Adjusted gap */
             }
             .key.large {
-                min-width: 45px;
-                padding: 8px 8px;
+                min-width: 50px; /* Increased min-width */
+                padding: 10px 10px; /* Increased padding */
             }
             #message {
                 font-size: 1.1em;
@@ -453,15 +453,15 @@
                 gap: 3px; /* Even smaller gap */
             }
             .key {
-                padding: 6px 2px;
-                font-size: 0.65em;
+                padding: 8px 3px; /* Increased padding, adjusted for smaller width */
+                font-size: 0.75em; /* Increased font size */
             }
             .keyboard-row {
                 gap: 2px;
             }
             .key.large {
-                min-width: 35px;
-                padding: 6px 6px;
+                min-width: 40px; /* Increased min-width */
+                padding: 8px 8px; /* Adjusted padding */
             }
             .emoji-phrase {
                 font-size: 2.2em;
@@ -731,7 +731,7 @@
         // All answers are 10 characters or less, and emojis are pure emoji.
         const emojiPhrases = [
             // Animals (30)
-            { emoji: "🐶", answer: "DOG" },
+            { emoji: "�", answer: "DOG" },
             { emoji: "🐱", answer: "CAT" },
             { emoji: "🐻", answer: "BEAR" },
             { emoji: "🦊", answer: "FOX" },
@@ -824,7 +824,7 @@
             { emoji: "⚡", answer: "LIGHTNING" },
             { emoji: "☔", answer: "UMBRELLA" },
             { emoji: "🌱", answer: "PLANT" },
-            { emoji: "�", answer: "AUTUMN" },
+            { emoji: "🍂", answer: "AUTUMN" },
             { emoji: "☀️⛱️", answer: "BEACH" },
             { emoji: "🌋", answer: "VOLCANO" },
             { emoji: "🧊", answer: "ICE" },
@@ -1238,7 +1238,7 @@
          */
         function renderPastGuesses() {
             guessesGrid.innerHTML = ''; // Clear existing grid
-            for (let i = 0; i < NUM_GUESSES; i++) {
+            for (let i = 0; i < pastGuessesData.length; i++) { // Only iterate up to pastGuessesData length
                 const guessRow = document.createElement('div');
                 guessRow.classList.add('guess-row');
                 guessRow.id = `guess-row-${i}`;
@@ -1295,22 +1295,26 @@
                 // Ensure keyboard display is updated for the new game
                 updateKeyboardDisplay();
                 stopCountdown(); // Stop countdown if starting a new game
-
-                // Create initial empty guess rows only if starting a new game
-                for (let i = 0; i < NUM_GUESSES; i++) {
-                    const guessRow = document.createElement('div');
-                    guessRow.classList.add('guess-row');
-                    guessRow.id = `guess-row-${i}`;
-
-                    for (let j = 0; j < correctAnswerLength; j++) {
-                        const letterBox = document.createElement('div');
-                        letterBox.classList.add('letter-box');
-                        guessRow.appendChild(letterBox);
-                    }
-                    guessesGrid.appendChild(guessRow);
-                }
             }
             
+            // Create initial empty guess rows (or fill if loaded).
+            // This loop now correctly handles adding only the *remaining* empty rows
+            // or no rows if all guesses are filled from a loaded state.
+            const rowsToCreate = NUM_GUESSES - pastGuessesData.length;
+            for (let i = 0; i < rowsToCreate; i++) {
+                const guessRow = document.createElement('div');
+                guessRow.classList.add('guess-row');
+                guessRow.id = `guess-row-${pastGuessesData.length + i}`; // Ensure unique IDs
+                
+                for (let j = 0; j < correctAnswerLength; j++) {
+                    const letterBox = document.createElement('div');
+                    letterBox.classList.add('letter-box');
+                    guessRow.appendChild(letterBox);
+                }
+                guessesGrid.appendChild(guessRow);
+            }
+
+
             // Ensure the game state (pointers, opacities) matches whether it's ended or not
             if (gameEnded) {
                 keyboard.style.pointerEvents = 'none';
