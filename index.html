@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotle</title>
+    <!-- Favicon: Red E emoji from URL -->
+    <link rel="icon" href="favicon-32x32.png">
+    <style>
+        /* Basic styling for the body to center content */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #1a1a1b; /* Dark background for Wordle feel */
+            margin: 0;
+            padding: 10px; /* Reduced padding slightly */
+            box-sizing: border-box; /* Changed from 'border' to 'border-box' for correct box model */
+            color: #e0e0e0; /* Light text for contrast */
+            overflow-y: auto; /* Allow scrolling on smaller screens if content overflows */
+        }
+
+        /* Container for the main game elements - now just a logical grouping */
+        .game-container {
+            /* Removed background, border, and shadow to make it "float" */
+            text-align: center;
+            width: 100%;
+            max-width: 500px; /* Made max-width slightly smaller for better phone fit */
+            box-sizing: border-box;
+            padding: 10px; /* Adjusted internal padding */
+        }
+
+        /* Header containing title and new icon buttons */
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Changed to center to group elements */
+            gap: 5px; /* Added gap to control space between items */
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px; /* Increased spacing below header */
+        }
+
+        /* Main heading style */
+        h1 {
+            color: #ffffff;
+            margin: 0; /* Reset margin */
+            font-size: 2.2em; /* Slightly smaller font size */
+            font-weight: 700;
+            /* Removed flex-grow: 1; to prevent it from pushing buttons apart */
+        }
+        p {
+            color: #b0b0b0;
+            margin-bottom: 15px; /* Adjusted margin */
+            font-size: 0.95em; /* Slightly smaller instructions */
+        }
+
+        /* Icon buttons in the header */
+        .icon-button {
+            border-radius: 50%; /* Made fully rounded */
+            cursor: pointer;
+            width: 35px; /* 30% bigger than 27px (27 * 1.3 = 35.1) */
+            height: 35px; /* 30% bigger than 27px */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out;
+            margin: 0; /* Removed margin here, relying on parent's gap */
+
+            /* Removed 3D effect */
+            box-shadow: none;
+            border-bottom: none;
+        }
+
+        /* Updated button colors */
+        #statsButton {
+            background-color: #FF99AA; /* More saturated pink */
+        }
+
+        #howToPlayButton {
+            background-color: #87CEEB; /* Sky blue */
+        }
+
+        .icon-button:active {
+            transform: translateY(0); /* No movement on press for cleaner look */
+            box-shadow: none;
+            border-bottom: none;
+        }
+        /* Updated active states for buttons */
+        #statsButton:active {
+            background-color: #E07788; /* Darker more saturated pink on press */
+        }
+        #howToPlayButton:active {
+            background-color: #6DA0CC; /* Darker sky blue on press */
+        }
+
+        .icon-button:hover {
+            opacity: 0.8; /* Subtle hover effect */
+        }
+
+        .icon-button svg {
+            fill: #ffffff;
+            width: 19.5px; /* 30% bigger than 15px (15 * 1.3 = 19.5) */
+            height: 19.5px; /* 30% bigger than 15px */
+        }
+
+        /* Emoji phrase display area */
+        .emoji-phrase {
+            font-size: 3.5em; /* Slightly smaller emoji size */
+            margin-bottom: 25px; /* Adjusted margin */
+            padding: 15px; /* Reduced padding */
+            background-color: #333333;
+            border-radius: 10px;
+            display: inline-block;
+            white-space: nowrap;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            user-select: none;
+        }
+
+        /* Guess grid container */
+        .guesses-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px; /* Reduced gap */
+            margin-bottom: 15px; /* Adjusted margin */
+            min-height: 200px; /* Adjusted min-height */
+            max-height: 300px; /* Adjusted max-height */
+            overflow-y: hidden;
+            align-items: center;
+        }
+
+        /* Individual guess row within the grid */
+        .guess-row {
+            display: flex;
+            gap: 5px; /* Reduced gap */
+            justify-content: center;
+            width: 100%;
+            padding: 3px 0; /* Reduced padding */
+        }
+
+        /* Styles for individual letter boxes */
+        .letter-box {
+            width: 40px; /* Smaller width */
+            height: 40px; /* Smaller height */
+            border: 2px solid #5a5a5a;
+            background-color: #1a1a1b;
+            color: #ffffff;
+            font-size: 1.4em; /* Smaller font size */
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+            box-sizing: border-box;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        /* Input field is now hidden but present to capture keyboard events */
+        #guess-input {
+            opacity: 0;
+            position: absolute;
+            pointer-events: none; /* Prevents clicks/taps from interacting directly */
+            top: -9999px;
+            left: -9999px;
+            width: 0;
+            height: 0;
+            /* Added readonly to prevent mobile keyboard from appearing on focus */
+            /* This is the key change to allow physical keyboard but prevent mobile KB */
+            -webkit-user-select: none;  /* Disable selection on webkit browsers */
+            -moz-user-select: none;     /* Disable selection on Firefox */
+            -ms-user-select: none;      /* Disable selection on IE/Edge */
+            user-select: none;          /* Standard property */
+            caret-color: transparent;   /* Hide blinking cursor */
+        }
+
+        /* Styling for correct letter (sky blue) */
+        .letter-box.correct {
+            background-color: #87CEEB; /* Sky blue */
+            border-color: #87CEEB; /* Sky blue */
+        }
+
+        /* Styling for present letter (more saturated pink) */
+        .letter-box.present {
+            background-color: #FF99AA; /* More saturated pink */
+            border-color: #FF99AA; /* More saturated pink */
+        }
+
+        /* Styling for absent letter (grey) */
+        .letter-box.absent {
+            background-color: #787c7e;
+            border-color: #787c7e;
+        }
+
+        /* On-screen keyboard container */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 7px; /* Adjusted gap */
+            margin-top: 15px; /* Adjusted margin */
+            width: 100%;
+            max-width: 500px; /* Adjusted max-width */
+        }
+
+        /* Individual keyboard row */
+        .keyboard-row {
+            display: flex;
+            gap: 5px; /* Adjusted gap */
+            justify-content: center;
+        }
+
+        /* Styling for individual keyboard keys */
+        .key {
+            padding: 12px 8px; /* Slightly reduced padding */
+            background-color: #818384;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em; /* Slightly smaller font size */
+            font-weight: bold;
+            color: #ffffff;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+            text-transform: uppercase;
+            min-width: 30px; /* Reduced min-width */
+
+            /* 3D effect for keys - Adjusted shadow colors to be lighter and more pronounced */
+            box-shadow: 0px 4px 0px 0px rgba(200,200,200,0.5), /* Lighter bottom shadow */
+                        0px 6px 6px -3px rgba(0,0,0,0.5); /* Soft overall shadow */
+            border-bottom: 2px solid rgba(150,150,150,0.5); /* Darker bottom edge for depth */
+        }
+
+        /* Hover effect for general keys - now just darkens */
+        .key:hover:not([data-key="enter"]):not([data-key="backspace"]):not(.correct):not(.present):not(.absent) {
+            background-color: #707273; /* Slightly darker grey for hover */
+        }
+
+        /* Pressed-in effect for keys - Adjusted shadow colors to be lighter */
+        .key:active {
+            background-color: #7a7c7d; /* Slightly lighter background on press */
+            transform: translateY(2px); /* Presses further down */
+            box-shadow: 0px 2px 0px 0px rgba(200,200,200,0.5), /* Reduced lighter bottom shadow */
+                        0px 3px 3px -1px rgba(0,0,0,0.5); /* Reduced overall shadow */
+            border-bottom: 1px solid rgba(150,150,150,0.5); /* Thin lighter bottom edge */
+        }
+
+        /* Larger keys for Enter/Backspace */
+        .key.large {
+            flex-grow: 1.5;
+            min-width: 55px; /* Adjusted min-width */
+            padding: 12px 12px; /* Adjusted padding */
+        }
+
+        /* Style for the new "Submit" key (formerly Enter) */
+        .key[data-key="enter"] {
+            background-color: #5A83A6; /* More saturated matte blue for submit button */
+            color: white;
+            box-shadow: 0px 4px 0px 0px rgba(60, 90, 120, 0.8), /* Darker shadow for depth */
+                        0px 6px 6px -3px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(60, 90, 120, 0.7);
+        }
+        .key[data-key="enter"]:active {
+            background-color: #4A6C8C; /* Darker matte blue on press */
+            box-shadow: 0px 2px 0px 0px rgba(60, 90, 120, 0.8),
+                        0px 3px 3px -1px rgba(0,0,0,0.5);
+            border-bottom: 1px solid rgba(60, 90, 120, 0.7);
+        }
+        /* Specific hover for Submit button */
+        .key[data-key="enter"]:hover {
+            background-color: #6a93b6; /* Slightly lighter more saturated matte blue on hover */
+        }
+
+
+        /* Keyboard key states mirroring Wordle - Adjusted shadow colors for states */
+        .key.correct {
+            background-color: #87CEEB; /* Sky blue */
+            color: white;
+            /* Adjusted shadow colors for sky blue */
+            box-shadow: 0px 4px 0px 0px rgba(70, 150, 190, 0.8), /* Darker blue shadow for depth */
+                        0px 6px 6px -3px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(70, 150, 190, 0.7);
+        }
+        .key.correct:active {
+             background-color: #6DA0CC; /* Darker sky blue on press */
+        }
+        /* No hover for correct/present/absent as they have fixed colors */
+        .key.correct:hover {
+            background-color: #87CEEB;
+        }
+
+        .key.present {
+            background-color: #FF99AA; /* More saturated pink */
+            color: white;
+            /* Adjusted shadow colors for more saturated pink */
+            box-shadow: 0px 4px 0px 0px rgba(220, 120, 130, 0.8), /* Darker pink shadow for depth */
+                        0px 6px 6px -3px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(220, 120, 130, 0.7);
+        }
+        .key.present:active {
+            background-color: #E07788; /* Darker more saturated pink on press */
+        }
+        .key.present:hover {
+            background-color: #FF99AA;
+        }
+
+        .key.absent {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            box-shadow: 0px 4px 0px 0px rgba(50,50,50,0.8), /* Darker grey shadow for depth */
+                        0px 6px 6px -3px rgba(0,0,0,0.5);
+            border-bottom: 2px solid rgba(50,50,50,0.7);
+        }
+        .key.absent:active {
+            background-color: #2a2a2a; /* Darker on press */
+        }
+        .key.absent:hover {
+            background-color: #3a3a3a;
+        }
+
+
+        /* Message display styling - This will now be for modal messages or hints */
+        #message {
+            margin-top: 15px; /* Adjusted margin */
+            font-size: 1.2em; /* Slightly smaller font size */
+            font-weight: bold;
+            padding: 10px 15px; /* Adjusted padding */
+            border-radius: 8px;
+            transition: opacity 0.3s ease-in-out;
+            color: #ffffff;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .win-message {
+            background-color: #6aaa64; /* Kept original green for win message background */
+        }
+
+        .lose-message {
+            background-color: #a33b3b;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* The original submit button is now hidden */
+        #submit-guess {
+            display: none;
+        }
+
+        /* Countdown Timer Styling */
+        #countdown-timer {
+            margin-bottom: 15px; /* Space between timer and emoji */
+            font-size: 1.5em; /* Larger font size */
+            color: #ffffff;
+            font-weight: bold;
+            /* Removed background, padding, border-radius, box-shadow */
+        }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 15px;
+                margin: 5px;
+                max-width: 95%; /* Make it take more width on small screens */
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            p {
+                font-size: 0.85em;
+            }
+            .emoji-phrase {
+                font-size: 2.8em;
+                padding: 12px;
+                margin-bottom: 20px;
+            }
+            .letter-box {
+                width: 36px; /* Further reduced */
+                height: 36px; /* Further reduced */
+                font-size: 1.3em;
+            }
+            .guess-row {
+                gap: 4px; /* Further reduced */
+            }
+            .key {
+                padding: 8px 4px;
+                font-size: 0.8em;
+                border-radius: 4px;
+                min-width: unset;
+                /* Adjust shadow for smaller keys */
+                box-shadow: 0px 3px 0px 0px rgba(170,170,170,0.4), 0px 5px 5px -3px rgba(0,0,0,0.5);
+                border-bottom: 2px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
+            }
+            .key:active {
+                box-shadow: 0px 1px 0px 0px rgba(170,170,170,0.4), 0px 2px 2px -1px rgba(0,0,0,0.5);
+                border-bottom: 1px solid rgba(100,100,100,0.5); /* Adjusted for smaller screens */
+            }
+            .keyboard-row {
+                gap: 3px;
+            }
+            .key.large {
+                min-width: 45px;
+                padding: 8px 8px;
+            }
+            #message {
+                font-size: 1.1em;
+                padding: 8px 12px;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+                margin-top: 15px;
+            }
+
+            /* Responsive specific styles for Submit key */
+            .key[data-key="enter"] {
+                box-shadow: 0px 3px 0px 0px rgba(60, 90, 120, 0.8),
+                            0px 5px 5px -3px rgba(0,0,0,0.5);
+                border-bottom: 2px solid rgba(60, 90, 120, 0.7);
+            }
+            .key[data-key="enter"]:active {
+                box-shadow: 0px 1px 0px 0px rgba(60, 90, 120, 0.8),
+                            0px 2px 2px -1px rgba(0,0,0,0.5);
+                border-bottom: 1px solid rgba(60, 90, 120, 0.7);
+            }
+
+            .icon-button {
+                width: 35px; /* 30% bigger than 27px base for mobile */
+                height: 35px; /* 30% bigger than 27px base for mobile */
+                margin: 0; /* Rely on parent gap for responsive */
+            }
+            .icon-button svg {
+                width: 19.5px; /* 30% bigger than 15px base for mobile */
+                height: 19.5px; /* 30% bigger than 15px base for mobile */
+            }
+        }
+
+        @media (max-width: 400px) {
+            .letter-box {
+                width: 32px; /* Even smaller */
+                height: 32px; /* Even smaller */
+                font-size: 1.1em;
+            }
+            .guess-row {
+                gap: 3px; /* Even smaller gap */
+            }
+            .key {
+                padding: 6px 2px;
+                font-size: 0.65em;
+            }
+            .keyboard-row {
+                gap: 2px;
+            }
+            .key.large {
+                min-width: 35px;
+                padding: 6px 6px;
+            }
+            .emoji-phrase {
+                font-size: 2.2em;
+            }
+            .icon-button {
+                width: 31px; /* 30% bigger than 24px base for tiny screens (24 * 1.3 = 31.2) */
+                height: 31px; /* 30% bigger than 24px base for tiny screens */
+            }
+            .icon-button svg {
+                width: 17.5px; /* 30% bigger than 13.5px base for tiny screens (13.5 * 1.3 = 17.55) */
+                height: 17.5px; /* 30% bigger than 13.5px base for tiny screens */
+            }
+        }
+
+        /* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Ensure it's on top */
+        }
+
+        .modal-content {
+            background-color: #2a2a2c; /* Slightly lighter than body background */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 80%; /* Responsive width */
+            color: #e0e0e0;
+            position: relative;
+            transform: scale(0.8); /* Start slightly smaller for animation */
+            opacity: 0; /* Start hidden for animation */
+            animation: fadeInScale 0.3s forwards ease-out; /* Animation on display */
+            max-height: 80vh; /* Limit height for scrollable content */
+            overflow-y: auto; /* Enable scrolling for modal content */
+        }
+
+        @keyframes fadeInScale {
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .modal-stats p, .modal-instructions p {
+            font-size: 1.1em;
+            margin: 8px 0;
+            color: #c0c0c0;
+        }
+
+        .modal-stats strong {
+            color: #ffffff;
+        }
+        
+        .modal-close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.8em;
+            color: #e0e0e0;
+            cursor: pointer;
+            line-height: 1;
+            padding: 5px;
+        }
+        .modal-close-button:hover {
+            color: #ffffff;
+        }
+
+        /* How to Play specific styles */
+        .modal-instructions {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 1em;
+            line-height: 1.5;
+        }
+        .modal-instructions h3 {
+            color: #ffffff;
+            font-size: 1.4em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .modal-instructions ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        .modal-instructions li {
+            margin-bottom: 5px;
+        }
+        .modal-instructions .example-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .modal-instructions .example-box {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #5a5a5a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            border-radius: 5px;
+        }
+        .modal-instructions .example-box.correct { background-color: #87CEEB; border-color: #87CEEB; } /* Sky Blue */
+        .modal-instructions .example-box.present { background-color: #FF99AA; border-color: #FF99AA; } /* More saturated pink */
+        .modal-instructions .example-box.absent { background-color: #787c7e; border-color: #787c7e; }
+
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Game Header with Title and Icon Buttons -->
+        <div class="game-header">
+            <div class="icon-button" id="statsButton" title="Show Statistics">
+                <!-- Different Chart Icon (e.g., bar chart) -->
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 9.22h3V21H5zM16 3h3v18h-3zM10.5 14h3v7h-3z"/>
+                </svg>
+            </div>
+            <h1>Emotle</h1>
+            <div class="icon-button" id="howToPlayButton" title="How to Play">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 13.9 13 14.5 13 15h-2v-.5c0-1.1.45-2.1 1.18-2.83l1.24-1.26c.37-.36.58-.86.58-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.5-.78 2.8-1.93 3.5z"/>
+                </svg>
+            </div>
+        </div>
+
+        <p>Translate the emoji phrase:</p>
+        
+        <!-- Countdown Timer -->
+        <div id="countdown-timer" class="hidden"></div>
+
+        <!-- Display area for the daily emoji phrase -->
+        <div class="emoji-phrase" id="emoji-display"></div>
+        
+        <!-- This input field is hidden and readonly, used for capturing physical keyboard input -->
+        <input type="text" id="guess-input" maxlength="50" autocomplete="off" readonly>
+        
+        <!-- Grid container for all guess rows (past and current) -->
+        <div class="guesses-grid" id="guesses-grid">
+            <!-- Guess rows will be dynamically added here -->
+        </div>
+
+        <!-- Message area for feedback (only for input errors now, no more guess count) -->
+        <div id="message" class="hidden"></div>
+        
+        <!-- On-screen keyboard -->
+        <div class="keyboard" id="on-screen-keyboard">
+            <div class="keyboard-row">
+                <div class="key" data-key="q">Q</div>
+                <div class="key" data-key="w">W</div>
+                <div class="key" data-key="e">E</div>
+                <div class="key" data-key="r">R</div>
+                <div class="key" data-key="t">T</div>
+                <div class="key" data-key="y">Y</div>
+                <div class="key" data-key="u">U</div>
+                <div class="key" data-key="i">I</div>
+                <div class="key" data-key="o">O</div>
+                <div class="key" data-key="p">P</div>
+            </div>
+            <div class="keyboard-row">
+                <!-- Empty div for spacing to center the row -->
+                <div class="key empty" style="flex-basis: 0.5; visibility: hidden;"></div>
+                <div class="key" data-key="a">A</div>
+                <div class="key" data-key="s">S</div>
+                <div class="key" data-key="d">D</div>
+                <div class="key" data-key="f">F</div>
+                <div class="key" data-key="g">G</div>
+                <div class="key" data-key="h">H</div>
+                <div class="key" data-key="j">J</div>
+                <div class="key" data-key="k">K</div>
+                <div class="key" data-key="l">L</div>
+                <div class="key empty" style="flex-basis: 0.5; visibility: hidden;"></div>
+            </div>
+            <div class="keyboard-row">
+                <div class="key large" data-key="enter">Submit</div> <!-- Changed text to Submit -->
+                <div class="key" data-key="z">Z</div>
+                <div class="key" data-key="x">X</div>
+                <div class="key" data-key="c">C</div>
+                <div class="key" data-key="v">V</div>
+                <div class="key" data-key="b">B</div>
+                <div class="key" data-key="n">N</div>
+                <div class="key" data-key="m">M</div>
+                <div class="key large" data-key="backspace">⌫</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over/Stats Modal -->
+    <div id="gameOverModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-button" id="statsModalCloseButton">&times;</button>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-stats">
+                <p>Games Played: <strong id="gamesPlayedStat"></strong></p>
+                <p>Win Rate: <strong id="winRateStat"></strong>%</p>
+                <p>Avg. Guesses per Win: <strong id="avgGuessesStat"></strong></p>
+            </div>
+            <p id="nextPuzzleInfo" style="margin-top: 20px; font-size: 1.1em;"></p>
+        </div>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToPlayModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-button" id="howToPlayModalCloseButton">&times;</button>
+            <h2 class="modal-title">How to Play Emotle</h2>
+            <div class="modal-instructions">
+                <p>Guess the hidden word that matches the emoji phrase in 5 tries.</p>
+                <p>Each guess must be a valid word of the correct length. Hit the <strong>Submit button</strong> on the keyboard to submit.</p>
+
+                <p>After each guess, the color of the tiles will change to show how close your guess was:</p>
+
+                <h3>Examples:</h3>
+                <p>The letter <strong>G</strong> is in the phrase and in the correct spot.</p>
+                <div class="example-row">
+                    <div class="example-box correct">G</div>
+                    <div class="example-box">A</div>
+                    <div class="example-box">M</div>
+                    <div class="example-box">E</div>
+                </div>
+
+                <p>The letter <strong>O</strong> is in the phrase but in the wrong spot.</p>
+                <div class="example-row">
+                    <div class="example-box">H</div>
+                    <div class="example-box present">O</div>
+                    <div class="example-box">U</div>
+                    <div class="example-box">S</div>
+                    <div class="example-box">E</div>
+                </div>
+
+                <p>The letter <strong>X</strong> is not in the phrase in any spot.</p>
+                <div class="example-row">
+                    <div class="example-box absent">B</div>
+                    <div class="example-box absent">O</div>
+                    <div class="example-box absent">X</div>
+                    <div class="example-box absent">E</div>
+                    <div class="example-box absent">R</div>
+                </div>
+                <p>A new Emotle puzzle is available every day!</p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Array containing 200 emoji phrases and their corresponding answers.
+        // All answers are 10 characters or less, and emojis are pure emoji.
+        const emojiPhrases = [
+            // Animals (30)
+            { emoji: "🐶", answer: "DOG" },
+            { emoji: "🐱", answer: "CAT" },
+            { emoji: "🐻", answer: "BEAR" },
+            { emoji: "🦊", answer: "FOX" },
+            { emoji: "🐷", answer: "PIG" },
+            { emoji: "🐠", answer: "FISH" },
+            { emoji: "🦋", answer: "BUTTERFLY" },
+            { emoji: "🐝", answer: "BEE" },
+            { emoji: "🦉", answer: "OWL" },
+            { emoji: "🐎", answer: "HORSE" },
+            { emoji: "🐘", answer: "ELEPHANT" },
+            { emoji: "🦒", answer: "GIRAFFE" },
+            { emoji: "🐒", answer: "MONKEY" },
+            { emoji: "🐧", answer: "PENGUIN" },
+            { emoji: "🐢", answer: "TURTLE" },
+            { emoji: "🐍", answer: "SNAKE" },
+            { emoji: "🐅", answer: "TIGER" },
+            { emoji: "🦓", answer: "ZEBRA" },
+            { emoji: "🐳", answer: "WHALE" },
+            { emoji: "🐬", answer: "DOLPHIN" },
+            { emoji: "🐦", answer: "BIRD" },
+            { emoji: "🦆", answer: "DUCK" },
+            { emoji: "🐓", answer: "ROOSTER" },
+            { emoji: "🐇", answer: "RABBIT" },
+            { emoji: "🐿️", answer: "SQUIRREL" },
+            { emoji: "🐾", answer: "PAWS" },
+            { emoji: "🐜", answer: "ANT" },
+            { emoji: "🕷️", "answer": "SPIDER" },
+            { emoji: "🦂", answer: "SCORPION" },
+            { emoji: "🦀", answer: "CRAB" },
+
+            // Food/Drink (40)
+            { emoji: "🍕", answer: "PIZZA" },
+            { emoji: "🍔", answer: "BURGER" },
+            { emoji: "🍟", answer: "FRIES" },
+            { emoji: "🍩", answer: "DONUT" },
+            { emoji: "🍦", answer: "ICECREAM" },
+            { emoji: "☕", answer: "COFFEE" },
+            { emoji: "🥤", answer: "SODA" },
+            { emoji: "🍎", answer: "APPLE" },
+            { emoji: "🍌", answer: "BANANA" },
+            { emoji: "🥕", answer: "CARROT" },
+            { emoji: "🥦", answer: "BROCCOLI" },
+            { emoji: "🍞", answer: "BREAD" },
+            { emoji: "🧀", answer: "CHEESE" },
+            { emoji: "🍳", answer: "EGG" },
+            { emoji: "🍬", answer: "CANDY" },
+            { emoji: "🍫", answer: "CHOCOLATE" },
+            { emoji: "🍓", answer: "STRAWBERRY" },
+            { emoji: "🌽", answer: "CORN" },
+            { emoji: "🍚", answer: "RICE" },
+            { emoji: "🍜", answer: "NOODLES" },
+            { emoji: "🍇", answer: "GRAPES" },
+            { emoji: "🍉", answer: "WATERMELON" },
+            { emoji: "🍋", answer: "LEMON" },
+            { emoji: "🍑", answer: "PEACH" },
+            { emoji: "🍒", answer: "CHERRY" },
+            { emoji: "🍍", answer: "PINEAPPLE" },
+            { emoji: "🥑", answer: "AVOCADO" },
+            { emoji: "🌶️", answer: "CHILI" },
+            { emoji: "🧅", answer: "ONION" },
+            { emoji: "🥔", answer: "POTATO" },
+            { emoji: "🍄", answer: "MUSHROOM" },
+            { emoji: "🥒", answer: "CUCUMBER" },
+            { emoji: "🥜", answer: "PEANUTS" },
+            { emoji: "🍯", answer: "HONEY" },
+            { emoji: "🧂", answer: "SALT" },
+            { emoji: "🍪", answer: "COOKIE" },
+            { emoji: "🎂", answer: "CAKE" },
+            { emoji: "🧁", answer: "CUPCAKE" },
+            { emoji: "🍩🍩", answer: "DOUGHNUT" },
+            { emoji: "☕🍵", answer: "TEA" },
+
+            // Nature/Weather (25)
+            { emoji: "☀️", answer: "SUN" },
+            { emoji: "🌙", answer: "MOON" },
+            { emoji: "🌟", answer: "STAR" },
+            { emoji: "🌧️", answer: "RAIN" },
+            { emoji: "🌳", answer: "TREE" },
+            { emoji: "🌸", answer: "FLOWER" },
+            { emoji: "🌊", answer: "WAVE" },
+            { emoji: "🔥", answer: "FIRE" },
+            { emoji: "⛰️", answer: "MOUNTAIN" },
+            { emoji: "❄️", answer: "SNOW" },
+            { emoji: "🌎", answer: "EARTH" },
+            { emoji: "🌈", answer: "RAINBOW" },
+            { emoji: "💧", answer: "WATER" },
+            { emoji: "🌪️", answer: "TORNADO" },
+            { emoji: "🌬️", answer: "WIND" },
+            { emoji: "☁️", answer: "CLOUD" },
+            { emoji: "⚡", answer: "LIGHTNING" },
+            { emoji: "☔", answer: "UMBRELLA" },
+            { emoji: "🌱", answer: "PLANT" },
+            { emoji: "�", answer: "AUTUMN" },
+            { emoji: "☀️⛱️", answer: "BEACH" },
+            { emoji: "🌋", answer: "VOLCANO" },
+            { emoji: "🧊", answer: "ICE" },
+            { emoji: "🏜️", answer: "DESERT" },
+            { emoji: "🌌", answer: "GALAXY" },
+
+            // Objects/Tech/Home (60)
+            { emoji: "💡", answer: "LIGHT" },
+            { emoji: "⏰", answer: "CLOCK" },
+            { emoji: "📚", answer: "BOOK" },
+            { emoji: "🎮", answer: "GAME" },
+            { emoji: "🚗", answer: "CAR" },
+            { emoji: "✈️", answer: "PLANE" },
+            { emoji: "🚀", answer: "ROCKET" },
+            { emoji: "🚢", answer: "SHIP" },
+            { emoji: "🏠", answer: "HOUSE" },
+            { emoji: "🏫", answer: "SCHOOL" },
+            { emoji: "🏥", answer: "HOSPITAL" },
+            { emoji: "🏢", answer: "BUILDING" },
+            { emoji: "📱", answer: "PHONE" },
+            { emoji: "💻", answer: "COMPUTER" },
+            { emoji: "📺", answer: "TELEVISION" },
+            { emoji: "📸", answer: "CAMERA" },
+            { emoji: "🎤", answer: "MICROPHONE" },
+            { emoji: "🎸", answer: "GUITAR" },
+            { emoji: "🥁", answer: "DRUMS" },
+            { emoji: "⚽", answer: "SOCCER" },
+            { emoji: "🏀", answer: "BASKETBALL" },
+            { emoji: "🏈", answer: "FOOTBALL" },
+            { emoji: "⚾", answer: "BASEBALL" },
+            { emoji: "🎾", answer: "TENNIS" },
+            { emoji: "🚲", answer: "BICYCLE" },
+            { emoji: "🔑", answer: "KEY" },
+            { emoji: "🎁", answer: "GIFT" },
+            { emoji: "✉️", answer: "LETTER" },
+            { emoji: "📍", answer: "LOCATION" },
+            { emoji: "💰", answer: "MONEY" },
+            { emoji: "💎", answer: "DIAMOND" },
+            { emoji: "🛡️", answer: "SHIELD" },
+            { emoji: "⚙️", answer: "GEAR" },
+            { emoji: "🧪", answer: "FLASK" },
+            { emoji: "🔬", answer: "MICROSCOPE" },
+            { emoji: "🔭", answer: "TELESCOPE" },
+            { emoji: "🗺️", answer: "MAP" },
+            { emoji: "📝", answer: "PAD" },
+            { emoji: "✂️", answer: "SCISSORS" },
+            { emoji: "🪚", answer: "SAW" },
+            { emoji: "🔨", answer: "HAMMER" },
+            { emoji: "🔧", answer: "WRENCH" },
+            { emoji: "📏", answer: "RULER" },
+            { emoji: "🗓️", answer: "CALENDAR" },
+            { emoji: "🗑️", answer: "TRASH" },
+            { emoji: "🔓", answer: "UNLOCK" },
+            { emoji: "🔒", answer: "LOCK" },
+            { emoji: "🧳", answer: "LUGGAGE" },
+            { emoji: "🎒", answer: "BACKPACK" },
+            { emoji: "💼", answer: "BRIEFCASE" },
+            { emoji: "📦", answer: "BOX" },
+            { emoji: "🛒", answer: "CART" },
+            { emoji: "🛎️", answer: "BELL" },
+            { emoji: "🪞", answer: "MIRROR" },
+            { emoji: "🛋️", answer: "SOFA" },
+            { emoji: "🪑", answer: "CHAIR" },
+            { emoji: "🛏️", answer: "BED" },
+            { emoji: "🚽", answer: "TOILET" },
+            { emoji: "🚿", answer: "SHOWER" },
+            { emoji: "🛁", answer: "BATHTUB" },
+
+            // Professions/People (20)
+            { emoji: "👨‍🍳", answer: "CHEF" },
+            { emoji: "👩‍⚕️", answer: "DOCTOR" },
+            { emoji: "👨‍💻", answer: "PROGRAMMER" },
+            { emoji: "👩‍🏫", answer: "TEACHER" },
+            { emoji: "👮‍♂️", answer: "POLICE" },
+            { emoji: "👨‍🚀", answer: "ASTRONAUT" },
+            { emoji: "👨‍👩‍👧‍👦", answer: "FAMILY" },
+            { emoji: "🧑‍🤝‍🧑", answer: "FRIENDS" },
+            { emoji: "🧑‍🎓", answer: "STUDENT" },
+            { emoji: "🧑‍🎤", answer: "SINGER" },
+            { emoji: "🧑‍🎨", answer: "ARTIST" },
+            { emoji: "🧑‍✈️", answer: "PILOT" },
+            { emoji: "🧑‍🚒", answer: "FIREFIGHT" },
+            { emoji: "🧑‍🏭", answer: "WORKER" },
+            { emoji: "🧑‍🌾", answer: "FARMER" },
+            { emoji: "🧑‍🔧", answer: "MECHANIC" },
+            { emoji: "🧑‍🔬", answer: "SCIENTIST" },
+            { emoji: "🧑‍⚖️", answer: "JUDGE" },
+            { emoji: "🧑‍💼", answer: "OFFICER" },
+            { emoji: "👶", answer: "BABY" },
+
+            // Emotions/Actions (20)
+            { emoji: "❤️", answer: "LOVE" },
+            { emoji: "😄", answer: "HAPPY" },
+            { emoji: "😭", answer: "CRYING" },
+            { emoji: "🏃‍♀️", answer: "RUNNING" },
+            { emoji: "🛌", answer: "SLEEPING" },
+            { emoji: "🚶‍♂️", answer: "WALKING" },
+            { emoji: "💃", answer: "DANCING" },
+            { emoji: "🕺", answer: "DANCING" },
+            { emoji: "🗣️", answer: "SPEAKING" },
+            { emoji: "👍", answer: "APPROVE" },
+            { emoji: "👎", answer: "DISAPPROVE" },
+            { emoji: "💯", answer: "PERFECT" },
+            { emoji: "🥳", answer: "CELEBRATE" },
+            { emoji: "🤔", answer: "THINKING" },
+            { emoji: "😡", answer: "ANGRY" },
+            { emoji: "😅", answer: "SWEATING" },
+            { emoji: "🤩", answer: "AMAZING" },
+            { emoji: "😴", answer: "SLEEPY" },
+            { emoji: "🤯", answer: "SHOCKED" },
+            { emoji: "😩", answer: "TIRED" },
+
+            // Pop Culture/Themes (25)
+            { emoji: "👑🎤", answer: "QUEEN" },
+            { emoji: "🎸⚡", answer: "ROCK" },
+            { emoji: "⭐️", answer: "FAME" },
+            { emoji: "🕷️🕸️", answer: "SPIDEY" },
+            { emoji: "🚀🌌", answer: "SPACE" },
+            { emoji: "🦸‍♂️🏙️", answer: "BATMAN" },
+            { emoji: "🏎️🏁", answer: "RACING" },
+            { emoji: "🦖🦕", answer: "DINOS" },
+            { emoji: "🤖👽", answer: "SCI-FI" },
+            { emoji: "🧚‍♀️✨", answer: "FAIRY" },
+            { emoji: "👻🎃", answer: "HALLOWEEN" },
+            { emoji: "🎅🎁", answer: "SANTA" },
+            { emoji: "🎄🌟", answer: "CHRISTMAS" },
+            { emoji: "🐣🥚", answer: "EASTER" },
+            { emoji: "🏈🏆", answer: "TOUCHDOWN" },
+            { emoji: "🏀 hoops", answer: "HOOPS" },
+            { emoji: "⚾🏟️", answer: "STADIUM" },
+            { emoji: "🎾 court", answer: "COURT" },
+            { emoji: "🌊 surf", answer: "SURFING" },
+            { emoji: "🏂❄️", answer: "SNOWBOARD" },
+            { emoji: "🎿⛷️", answer: "SKIING" },
+            { emoji: "🧘‍♀️☮️", answer: "YOGA" },
+            { emoji: "🎨🖌️", answer: "ART" },
+            { emoji: "📷🎞️", answer: "PHOTO" },
+            { emoji: "🎬🍿", answer: "MOVIE" },
+
+            // More Objects/General (35) - To reach 200 total
+            { emoji: "🏠🌳", answer: "GARDEN" },
+            { emoji: "🚪", answer: "DOOR" },
+            { emoji: "🪟", answer: "WINDOW" },
+            { emoji: "💡💡💡", answer: "BRIGHT" },
+            { emoji: "🔑🚪", answer: "LOCK" },
+            { emoji: "✉️📬", answer: "MAIL" },
+            { emoji: "📦📦", answer: "PACKAGE" },
+            { emoji: "🧮", answer: "ABACUS" },
+            { emoji: "📐", answer: "ANGLE" },
+            { emoji: "📍📍", answer: "PINS" },
+            { emoji: "🗺️🌐", answer: "WORLD" },
+            { emoji: "🌍", answer: "PLANET" },
+            { emoji: "🧭", answer: "COMPASS" },
+            { emoji: "🔭🪐", answer: "ORBIT" },
+            { emoji: "🧪🔬", answer: "SCIENCE" },
+            { emoji: "💉", answer: "NEEDLE" },
+            { emoji: "💊", answer: "PILL" },
+            { emoji: "🩻", answer: "XRAY" },
+            { emoji: "🩹", answer: "BANDAGE" },
+            { emoji: "🩸", answer: "BLOOD" },
+            { emoji: "📊", answer: "GRAPH" },
+            { emoji: "📉", answer: "DECREASE" },
+            { emoji: "📈", answer: "INCREASE" },
+            { emoji: "🔔", answer: "BELL" },
+            { emoji: "🎶", answer: "MUSIC" },
+            { emoji: "🎧", answer: "EARBUDS" },
+            { emoji: "🗣️💬", answer: "CHAT" },
+            { emoji: "✍️", answer: "WRITE" },
+            { emoji: "📅", answer: "DATE" },
+            { emoji: "📝", answer: "NOTE" },
+            { emoji: "🧽", answer: "SPONGE" },
+            { emoji: "🪣", answer: "BUCKET" },
+            { emoji: "🧹", answer: "BROOM" },
+            { emoji: "🧻", answer: "TISSUE" },
+            { emoji: "✂️🧵", answer: "SEWING" },
+            // Additional entries to reach 200
+            { emoji: "🗺️🧭", answer: "JOURNEY" },
+            { emoji: "🗣️📢", answer: "SPEECH" },
+            { emoji: "👓", answer: "GLASSES" },
+            { emoji: "🕶️", answer: "SUNGLASS" },
+            { emoji: "👕", answer: "SHIRT" },
+            { emoji: "👖", answer: "PANTS" },
+            { emoji: "👗", answer: "DRESS" },
+            { emoji: "🧥", answer: "COAT" },
+            { emoji: "👟", answer: "SNEAKERS" },
+            { emoji: "👠", answer: "HEELS" },
+            { emoji: "👢", answer: "BOOTS" },
+            { emoji: "🎩", answer: "HAT" },
+            { emoji: "🧣", answer: "SCARF" },
+            { emoji: "🧤", answer: "GLOVES" },
+            { emoji: "💍", answer: "RING" },
+            { emoji: " necklace", answer: "NECKLACE" },
+            { emoji: "💎✨", answer: "JEWELS" },
+            { emoji: "🕰️", answer: "GRANDFATH" }, // Grandfather Clock (9 chars)
+            { emoji: "🎈", answer: "BALLOON" },
+            { emoji: "🎉", answer: "PARTY" },
+            { emoji: "🎊", answer: "CELEBRATE" },
+            { emoji: "🎁🎀", answer: "PRESENT" },
+            { emoji: "🎂🕯️", answer: "BIRTHDAY" },
+            { emoji: "🥳🎶", answer: "FESTIVAL" },
+            { emoji: "🎭", answer: "ACTING" },
+            { emoji: "🎻", answer: "VIOLIN" },
+            { emoji: "🎺", answer: "TRUMPET" },
+            { emoji: "🎷", answer: "SAXOPHONE" },
+            { emoji: "🥁🥁", answer: "DRUMMING" },
+            { emoji: "🎹", answer: "PIANO" },
+            { emoji: "🎼", answer: "MELODY" },
+            { emoji: "🎙️", answer: "VOCALS" },
+            { emoji: "🖼️", answer: "PAINTING" },
+            { emoji: "🗿", answer: "STATUE" },
+            { emoji: "🏺", answer: "VASE" },
+            { emoji: "🏹", answer: "ARCHERY" },
+            { emoji: "🎣", answer: "FISHING" },
+            { emoji: "🧗‍♀️", answer: "CLIMBING" },
+            { emoji: "🚴‍♂️", answer: "CYCLING" },
+            { emoji: "🚣‍♀️", answer: "ROWING" },
+            { emoji: "🏊‍♀️", answer: "SWIMMING" },
+            { emoji: "🏄‍♀️", answer: "SURFING" },
+            { emoji: "🤽‍♂️", answer: "WATERPOLO" }, // 9 chars
+            { emoji: "🤸‍♂️", answer: "GYMNAST" },
+            { emoji: "🤺", answer: "FENCING" },
+            { emoji: "🥋", answer: "KARATE" },
+            { emoji: "🥊", answer: "BOXING" },
+            { emoji: "🤼‍♂️", answer: "WRESTLING" },
+            { emoji: "🥅", answer: "GOAL" },
+            { emoji: "🏒", answer: "HOCKEY" },
+            { emoji: "⛸️", answer: "SKATING" },
+            { emoji: "🛷", answer: "SLEDDING" },
+            { emoji: "🎯🏹", answer: "ARCHER" },
+            { emoji: "🎳", answer: "BOWLING" },
+            { emoji: "🎲", answer: "DICE" },
+            { emoji: "🧩", answer: "PUZZLE" },
+            { emoji: "🧸", answer: "TEDDY" },
+            { emoji: "🪀", answer: "YOYO" },
+            { emoji: "🪁", answer: "KITE" },
+            { emoji: "🚂💨", answer: "TRAIN" },
+            { emoji: "🚒", answer: "FIRETRUCK" }, // 9 chars
+            { emoji: "🚔", answer: "POLICECAR" }, // 9 chars
+            { emoji: "🚕", answer: "TAXI" },
+            { emoji: "🚌", answer: "BUS" },
+            { emoji: "🚆", answer: "SUBWAY" },
+            { emoji: "⛴️", answer: "FERRY" },
+            { emoji: "🚁", answer: "HELICOPTER" }, // 10 chars
+            { emoji: "🛰️", answer: "SATELLITE" }, // 9 chars
+            { emoji: "🛎️🛎️", answer: "SERVICE" },
+            { emoji: "🛎️🚪", answer: "DOORBELL" }
+        ];
+
+        // Define the epoch start date for calculating the daily phrase index.
+        const EPOCH_START_DATE = new Date('2024-01-01T00:00:00Z');
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+        const NUM_GUESSES = 5;
+
+        // Game state variables
+        let currentEmojiPhrase = {};
+        let correctAnswerLength = 0;
+        let guessesRemaining = NUM_GUESSES;
+        let gameEnded = false;
+        let currentGuessString = ""; // To track the current typed input
+        let keyboardState = {}; // To store the color state of each keyboard key
+        let guessesTakenInCurrentGame = 0; // Track guesses for current game
+        let countdownInterval; // Global variable for countdown interval
+        let pastGuessesData = []; // Array to store submitted guesses and their states
+
+        // Get references to DOM elements
+        const emojiDisplay = document.getElementById('emoji-display');
+        const guessInput = document.getElementById('guess-input');
+        const guessesGrid = document.getElementById('guesses-grid');
+        const messageDisplay = document.getElementById('message');
+        const keyboard = document.getElementById('on-screen-keyboard');
+        const countdownTimerDisplay = document.getElementById('countdown-timer');
+
+        // Modal elements
+        const gameOverModal = document.getElementById('gameOverModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const gamesPlayedStat = document.getElementById('gamesPlayedStat');
+        const winRateStat = document.getElementById('winRateStat');
+        const avgGuessesStat = document.getElementById('avgGuessesStat');
+        const nextPuzzleInfo = document.getElementById('nextPuzzleInfo');
+        const statsModalCloseButton = document.getElementById('statsModalCloseButton');
+
+        const howToPlayModal = document.getElementById('howToPlayModal');
+        const howToPlayModalCloseButton = document.getElementById('howToPlayModalCloseButton');
+
+        // Header buttons
+        const statsButton = document.getElementById('statsButton');
+        const howToPlayButton = document.getElementById('howToPlayButton');
+
+
+        /**
+         * Loads game statistics from local storage or initializes them if not found.
+         * @returns {Object} An object containing gamesPlayed, gamesWon, and totalGuesses.
+         */
+        function loadStats() {
+            const stats = localStorage.getItem('emotleStats');
+            if (stats) {
+                return JSON.parse(stats);
+            }
+            return {
+                gamesPlayed: 0,
+                gamesWon: 0,
+                totalGuesses: 0
+            };
+        }
+
+        /**
+         * Saves game statistics to local storage.
+         * @param {Object} stats - The statistics object to save.
+         */
+        function saveStats(stats) {
+            localStorage.setItem('emotleStats', JSON.stringify(stats));
+        }
+
+        /**
+         * Updates game statistics after a game ends.
+         * @param {boolean} wonGame - True if the game was won, false otherwise.
+         * @param {number} guessesTaken - The number of guesses taken in the current game.
+         */
+        function updateStats(wonGame, guessesTaken) {
+            const stats = loadStats();
+            stats.gamesPlayed++;
+            if (wonGame) {
+                stats.gamesWon++;
+                stats.totalGuesses += guessesTaken; // Only add guesses if won
+            }
+            saveStats(stats);
+            return stats;
+        }
+
+        /**
+         * Calculates and returns the daily emoji phrase based on the current date.
+         * The selection cycles through the `emojiPhrases` array.
+         * @returns {Object} The emoji phrase object for the current day.
+         */
+        function getDailyEmojiPhrase() {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
+            
+            const diffTime = Math.abs(today.getTime() - EPOCH_START_DATE.getTime());
+            const diffDays = Math.floor(diffTime / MS_PER_DAY); 
+            
+            const index = diffDays % emojiPhrases.length;
+            return emojiPhrases[index];
+        }
+
+        /**
+         * Saves the current game state to local storage.
+         * Includes the emoji phrase, guesses made, remaining attempts, and keyboard state.
+         */
+        function saveGameState() {
+            const gameState = {
+                emoji: currentEmojiPhrase.emoji,
+                answer: currentEmojiPhrase.answer, // Save answer too, for comparison on load
+                guessesRemaining: guessesRemaining,
+                guessesTakenInCurrentGame: guessesTakenInCurrentGame,
+                keyboardState: keyboardState,
+                pastGuessesData: pastGuessesData // Store the actual guess words and their states
+            };
+            localStorage.setItem('emotleGameState', JSON.stringify(gameState));
+        }
+
+        /**
+         * Loads the game state from local storage.
+         * Returns true if a valid state for the current daily puzzle was loaded, false otherwise.
+         */
+        function loadGameState() {
+            const savedStateStr = localStorage.getItem('emotleGameState');
+            if (savedStateStr) {
+                const savedState = JSON.parse(savedStateStr);
+
+                // Check if the saved game state matches the current daily puzzle
+                if (savedState.emoji === getDailyEmojiPhrase().emoji && savedState.answer === getDailyEmojiPhrase().answer) {
+                    currentEmojiPhrase = { emoji: savedState.emoji, answer: savedState.answer };
+                    correctAnswerLength = currentEmojiPhrase.answer.length;
+                    guessesRemaining = savedState.guessesRemaining;
+                    guessesTakenInCurrentGame = savedState.guessesTakenInCurrentGame;
+                    keyboardState = savedState.keyboardState;
+                    pastGuessesData = savedState.pastGuessesData;
+
+                    // Re-render the past guesses
+                    renderPastGuesses();
+                    updateKeyboardDisplay(); // Apply keyboard states from loaded data
+
+                    // If the loaded game was already won or lost, set gameEnded
+                    if (guessesRemaining <= 0 || pastGuessesData.some(g => g.word === currentEmojiPhrase.answer)) {
+                        gameEnded = true;
+                        keyboard.style.pointerEvents = 'none';
+                        keyboard.style.opacity = '0.5';
+                        emojiDisplay.style.opacity = '0.5';
+                        guessesGrid.style.opacity = '0.5';
+                        showMessage('You\'ve played today\'s Emotle. Next puzzle unlocks soon!', 'info');
+                        startCountdown();
+                    } else {
+                        // Game in progress, ensure it's interactable
+                        gameEnded = false;
+                        keyboard.style.pointerEvents = 'auto';
+                        keyboard.style.opacity = '1';
+                        emojiDisplay.style.opacity = '1';
+                        guessesGrid.style.opacity = '1';
+                        stopCountdown();
+                    }
+                    return true;
+                }
+            }
+            return false; // No valid saved state for today's puzzle
+        }
+
+        /**
+         * Renders all past guesses stored in `pastGuessesData` onto the grid.
+         */
+        function renderPastGuesses() {
+            guessesGrid.innerHTML = ''; // Clear existing grid
+            for (let i = 0; i < NUM_GUESSES; i++) {
+                const guessRow = document.createElement('div');
+                guessRow.classList.add('guess-row');
+                guessRow.id = `guess-row-${i}`;
+
+                const guessEntry = pastGuessesData[i];
+
+                for (let j = 0; j < correctAnswerLength; j++) {
+                    const letterBox = document.createElement('div');
+                    letterBox.classList.add('letter-box');
+                    if (guessEntry) {
+                        letterBox.textContent = guessEntry.word[j].toUpperCase();
+                        letterBox.classList.add(guessEntry.letterStates[j]);
+                    }
+                    guessRow.appendChild(letterBox);
+                }
+                guessesGrid.appendChild(guessRow);
+            }
+        }
+
+
+        /**
+         * Initializes or resets the game state and UI.
+         */
+        function initializeGame() {
+            // First, get the daily emoji phrase
+            currentEmojiPhrase = getDailyEmojiPhrase();
+            currentEmojiPhrase.answer = currentEmojiPhrase.answer.replace(/\s/g, ''); 
+            correctAnswerLength = currentEmojiPhrase.answer.length;
+
+            emojiDisplay.textContent = currentEmojiPhrase.emoji;
+            messageDisplay.classList.add('hidden');
+            messageDisplay.textContent = '';
+            
+            // Try to load saved game state for today
+            const loaded = loadGameState();
+
+            if (!loaded) {
+                // If no saved state for today, start a new game
+                guessesRemaining = NUM_GUESSES;
+                gameEnded = false;
+                currentGuessString = "";
+                guessesTakenInCurrentGame = 0;
+                pastGuessesData = []; // Clear previous data
+                guessesGrid.innerHTML = ''; // Clear previous guess rows
+
+                // Reset keyboard state to default for a new game
+                const keys = keyboard.querySelectorAll('.key');
+                keys.forEach(key => {
+                    key.classList.remove('correct', 'present', 'absent');
+                    if (key.dataset.key && key.dataset.key.length === 1 && key.dataset.key.match(/[a-z]/i)) {
+                        keyboardState[key.dataset.key.toUpperCase()] = 'default';
+                    }
+                });
+                // Ensure keyboard display is updated for the new game
+                updateKeyboardDisplay();
+                stopCountdown(); // Stop countdown if starting a new game
+
+                // Create initial empty guess rows only if starting a new game
+                for (let i = 0; i < NUM_GUESSES; i++) {
+                    const guessRow = document.createElement('div');
+                    guessRow.classList.add('guess-row');
+                    guessRow.id = `guess-row-${i}`;
+
+                    for (let j = 0; j < correctAnswerLength; j++) {
+                        const letterBox = document.createElement('div');
+                        letterBox.classList.add('letter-box');
+                        guessRow.appendChild(letterBox);
+                    }
+                    guessesGrid.appendChild(guessRow);
+                }
+            }
+            
+            // Ensure the game state (pointers, opacities) matches whether it's ended or not
+            if (gameEnded) {
+                keyboard.style.pointerEvents = 'none';
+                keyboard.style.opacity = '0.5';
+                emojiDisplay.style.opacity = '0.5';
+                guessesGrid.style.opacity = '0.5';
+            } else {
+                keyboard.style.pointerEvents = 'auto';
+                keyboard.style.opacity = '1';
+                emojiDisplay.style.opacity = '1';
+                guessesGrid.style.opacity = '1';
+            }
+
+            guessInput.focus(); 
+            hideStatsModal();
+            hideHowToPlayModal();
+        }
+
+
+        /**
+         * Updates the visual display of the current guess as the user types.
+         * @param {string} inputString - The current string to display in the current guess row.
+         */
+        function updateCurrentGuessDisplay(inputString) {
+            // Calculate the correct row index based on guesses already made
+            const currentRowIndex = NUM_GUESSES - guessesRemaining;
+            const currentRow = document.getElementById(`guess-row-${currentRowIndex}`);
+            
+            if (!currentRow) return;
+
+            const letterBoxes = currentRow.querySelectorAll('.letter-box');
+            for (let i = 0; i < correctAnswerLength; i++) {
+                if (i < inputString.length) {
+                    letterBoxes[i].textContent = inputString[i].toUpperCase();
+                    letterBoxes[i].style.borderColor = '#999'; // Indicate active input
+                } else {
+                    letterBoxes[i].textContent = '';
+                    letterBoxes[i].style.borderColor = '#5a5a5a'; // Reset to default
+                }
+            }
+        }
+
+        /**
+         * Checks the user's guess against the correct answer and updates the UI.
+         */
+        function checkGuess() {
+            if (gameEnded) return;
+
+            const userGuess = currentGuessString.toUpperCase();
+            const correctAnswer = currentEmojiPhrase.answer;
+
+            if (userGuess.length !== correctAnswerLength) {
+                showMessage(`Guess must be ${correctAnswerLength} letters long!`, "incorrect");
+                return;
+            }
+
+            guessesTakenInCurrentGame++; // Increment guess count for the current game
+
+            const currentRowIndex = NUM_GUESSES - guessesRemaining;
+            const currentRow = document.getElementById(`guess-row-${currentRowIndex}`);
+            if (!currentRow) {
+                console.error("Current guess row not found!");
+                return;
+            }
+            const letterBoxes = currentRow.querySelectorAll('.letter-box');
+
+            const solutionLetters = correctAnswer.split('');
+            const guessLetters = userGuess.split('');
+            const letterStates = Array(correctAnswerLength).fill(''); 
+
+            const tempSolution = [...solutionLetters];
+
+            // First pass: Mark correct positions (sky blue)
+            for (let i = 0; i < correctAnswerLength; i++) {
+                if (guessLetters[i] === tempSolution[i]) {
+                    letterStates[i] = 'correct';
+                    tempSolution[i] = null; 
+                }
+            }
+
+            // Second pass: Mark present letters (more saturated pink) and absent (grey)
+            for (let i = 0; i < correctAnswerLength; i++) {
+                if (letterStates[i] === '') { 
+                    const char = guessLetters[i];
+                    const indexInSolution = tempSolution.indexOf(char);
+                    if (indexInSolution !== -1) {
+                        letterStates[i] = 'present';
+                        tempSolution[indexInSolution] = null; 
+                    } else {
+                        letterStates[i] = 'absent';
+                    }
+                }
+            }
+
+            // Store the guess data before applying to UI and updating remaining guesses
+            pastGuessesData.push({ word: userGuess, letterStates: [...letterStates] });
+
+            // Apply classes to letter boxes and update keyboard state
+            for (let i = 0; i < correctAnswerLength; i++) {
+                const char = guessLetters[i];
+                const state = letterStates[i];
+                letterBoxes[i].classList.add(state);
+
+                const currentKeyColor = keyboardState[char] || 'default';
+                if (state === 'correct') {
+                    keyboardState[char] = 'correct';
+                } else if (state === 'present' && currentKeyColor !== 'correct') {
+                    keyboardState[char] = 'present';
+                } else if (state === 'absent' && currentKeyColor === 'default') {
+                    keyboardState[char] = 'absent';
+                }
+            }
+
+            updateKeyboardDisplay(); // Apply updated keyboard states
+
+            guessesRemaining--;
+            saveGameState(); // Save state after each valid guess
+
+            if (userGuess === correctAnswer) {
+                localStorage.setItem('emotleLastPlayedDate', new Date().toISOString().split('T')[0]);
+                endGame(true, guessesTakenInCurrentGame);
+            } else {
+                if (guessesRemaining <= 0) {
+                    localStorage.setItem('emotleLastPlayedDate', new Date().toISOString().split('T')[0]);
+                    endGame(false, guessesTakenInCurrentGame);
+                }
+            }
+            currentGuessString = ""; 
+            updateCurrentGuessDisplay(currentGuessString);
+            guessInput.focus(); 
+        }
+
+        /**
+         * Updates the visual appearance of the on-screen keyboard keys based on `keyboardState`.
+         */
+        function updateKeyboardDisplay() {
+            const keys = keyboard.querySelectorAll('.key');
+            keys.forEach(keyElement => {
+                const char = keyElement.dataset.key ? keyElement.dataset.key.toUpperCase() : '';
+                const state = keyboardState[char];
+                
+                keyElement.classList.remove('correct', 'present', 'absent');
+                if (state && state !== 'default') {
+                    keyElement.classList.add(state);
+                }
+            });
+        }
+
+        /**
+         * Displays a message to the user with a specific type.
+         * @param {string} msg - The message text to display.
+         * @param {string} type - The class name to apply for styling (e.g., "win-message", "lose-message", "incorrect").
+         */
+        function showMessage(msg, type) {
+            messageDisplay.textContent = msg;
+            messageDisplay.className = 'message';
+            messageDisplay.classList.add(type);
+            messageDisplay.classList.remove('hidden');
+            
+            if (type === 'incorrect' || type === 'info') {
+                setTimeout(() => {
+                    messageDisplay.classList.add('hidden');
+                }, 2000);
+            }
+        }
+
+        /**
+         * Ends the game, disabling input and showing the stats modal.
+         * @param {boolean} won - True if the game was won, false otherwise.
+         * @param {number} guessesTaken - Number of guesses taken in this game.
+         */
+        function endGame(won, guessesTaken) {
+            gameEnded = true;
+            keyboard.style.pointerEvents = 'none';
+            keyboard.style.opacity = '0.5';
+            emojiDisplay.style.opacity = '0.5';
+            guessesGrid.style.opacity = '0.5';
+            
+            const stats = updateStats(won, guessesTaken); // This line calls updateStats
+            showStatsModal(won, stats);
+        }
+
+        /**
+         * Displays the game over modal with updated statistics.
+         * Can be called independently to show stats.
+         * @param {boolean} [won] - Optional. True if the game was won, false otherwise. Determines modal title/color.
+         * @param {Object} [stats] - Optional. The current game statistics. If not provided, loads from local storage.
+         */
+        function showStatsModal(won, stats) {
+            hideHowToPlayModal();
+            if (!stats) {
+                stats = loadStats();
+            }
+
+            if (typeof won === 'boolean') { // Game just ended (win or loss)
+                modalTitle.textContent = won ? '🎉 You Won! 🎉' : `Game Over! The answer was "${currentEmojiPhrase.answer}".`;
+                modalTitle.classList.remove('win-message', 'lose-message');
+                modalTitle.classList.add(won ? 'win-message' : 'lose-message');
+                startCountdown(); // Start countdown only if game officially ended
+            } else if (gameEnded) { // Game was already ended (e.g., page reload after win/loss)
+                // Determine if it was a win or loss based on pastGuessesData and correct answer
+                const wasWon = pastGuessesData.some(g => g.word === currentEmojiPhrase.answer);
+                modalTitle.textContent = wasWon ? '🎉 You Won! 🎉' : `Game Over! The answer was "${currentEmojiPhrase.answer}".`;
+                modalTitle.classList.remove('win-message', 'lose-message');
+                modalTitle.classList.add(wasWon ? 'win-message' : 'lose-message');
+                startCountdown(); // Resume countdown if it was an ended game
+            }
+            else { // Game is ongoing, user just clicked stats button
+                modalTitle.textContent = 'Your Game Statistics';
+                modalTitle.classList.remove('win-message', 'lose-message');
+                stopCountdown(); // Ensure countdown is not running if game is ongoing
+            }
+
+            gamesPlayedStat.textContent = stats.gamesPlayed;
+            winRateStat.textContent = stats.gamesPlayed > 0 ? ((stats.gamesWon / stats.gamesPlayed) * 100).toFixed(1) : '0.0';
+            avgGuessesStat.textContent = stats.gamesWon > 0 ? (stats.totalGuesses / stats.gamesWon).toFixed(1) : '0.0';
+
+            nextPuzzleInfo.textContent = 'Come back tomorrow for a new puzzle!';
+            
+            gameOverModal.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the game over/stats modal.
+         */
+        function hideStatsModal() {
+            gameOverModal.classList.add('hidden');
+        }
+
+        /**
+         * Displays the "How to Play" modal.
+         */
+        function showHowToPlayModal() {
+            hideStatsModal();
+            howToPlayModal.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the "How to Play" modal.
+         */
+        function hideHowToPlayModal() {
+            howToPlayModal.classList.add('hidden');
+        }
+
+        /**
+         * Starts the countdown timer to the next day's puzzle.
+         */
+        function startCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            countdownTimerDisplay.classList.remove('hidden');
+
+            function updateCountdown() {
+                const now = new Date();
+                const nextMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0));
+                let timeRemaining = nextMidnight.getTime() - now.getTime();
+
+                if (timeRemaining <= 0) {
+                    stopCountdown();
+                    localStorage.removeItem('emotleLastPlayedDate'); // Clear played date
+                    localStorage.removeItem('emotleGameState'); // Clear game state for a new day
+                    initializeGame(); // Re-initialize for the new day's puzzle
+                    return;
+                }
+
+                const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                timeRemaining %= (1000 * 60 * 60);
+                const minutes = Math.floor(timeRemaining / (1000 * 60));
+                timeRemaining %= (1000 * 60);
+                const seconds = Math.floor(timeRemaining / 1000);
+
+                countdownTimerDisplay.textContent = `Next puzzle in: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        /**
+         * Stops the countdown timer and hides its display.
+         */
+        function stopCountdown() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            countdownTimerDisplay.classList.add('hidden');
+        }
+
+
+        // --- Event Listeners ---
+
+        // Event listener for physical keyboard input on the hidden guess field
+        guessInput.addEventListener('keydown', (e) => {
+            if (gameEnded) {
+                e.preventDefault();
+                return;
+            }
+
+            const key = e.key.toUpperCase();
+
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                currentGuessString = currentGuessString.slice(0, -1);
+                updateCurrentGuessDisplay(currentGuessString);
+                return;
+            }
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                checkGuess();
+                return;
+            }
+
+            if (key.length === 1 && key.match(/[A-Z]/) && currentGuessString.length < correctAnswerLength) {
+                currentGuessString += key;
+                updateCurrentGuessDisplay(currentGuessString);
+            }
+        });
+
+        // Event listener for clicks on the on-screen keyboard
+        keyboard.addEventListener('click', (e) => {
+            if (gameEnded) return;
+
+            if (!e.target.classList.contains('key') || e.target.classList.contains('empty')) {
+                return;
+            }
+
+            const key = e.target.dataset.key;
+
+            if (key === 'enter') {
+                checkGuess();
+            } else if (key === 'backspace') {
+                currentGuessString = currentGuessString.slice(0, -1);
+            } else if (key.length === 1 && key.match(/[a-z]/) && currentGuessString.length < correctAnswerLength) {
+                currentGuessString += key.toUpperCase();
+            }
+            
+            updateCurrentGuessDisplay(currentGuessString);
+            guessInput.focus();
+        });
+
+        // Event listener to focus the hidden input when clicking anywhere on the body
+        document.body.addEventListener('click', (e) => {
+            if (!gameEnded && !e.target.closest('.modal-overlay')) {
+                guessInput.focus();
+            }
+        });
+
+        // Event listeners for the modal buttons
+        statsModalCloseButton.addEventListener('click', hideStatsModal);
+        howToPlayModalCloseButton.addEventListener('click', hideHowToPlayModal);
+
+        // Event listeners for the new header icon buttons
+        statsButton.addEventListener('click', () => showStatsModal(undefined, loadStats())); 
+        howToPlayButton.addEventListener('click', showHowToPlayModal);
+
+
+        // Initialize the game when the entire HTML document has been loaded and parsed
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
