@@ -1,0 +1,781 @@
+/* Basic styling for the body to center content */
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #1a1a1b; /* Dark background for Wordle feel */
+    margin: 0;
+    padding: 10px; /* Reduced padding slightly */
+    box-sizing: border-box;
+    color: #e0e0e0; /* Light text for contrast */
+    overflow-y: auto; /* Allow scrolling on smaller screens if content overflows */
+}
+
+/* Container for the main game elements - now just a logical grouping */
+.game-container {
+    /* Removed background, border, and shadow to make it "float" */
+    text-align: center;
+    width: 100%;
+    max-width: 500px; /* Made max-width slightly smaller for better phone fit */
+    box-sizing: border-box;
+    padding: 10px; /* Adjusted internal padding */
+}
+
+/* Header containing title and new icon buttons */
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Changed to center to group elements */
+    gap: 5px; /* Added gap to control space between items */
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 20px; /* Increased spacing below header */
+}
+
+/* Main heading style */
+h1 {
+    color: #ffffff;
+    margin: 0; /* Reset margin */
+    font-size: 2.2em; /* Slightly smaller font size */
+    font-weight: 700;
+    /* Removed flex-grow: 1; to prevent it from pushing buttons apart */
+}
+
+a {
+    color: #87CEEB; /* Sky blue links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p {
+    color: #b0b0b0;
+    margin-bottom: 15px; /* Adjusted margin */
+    font-size: 0.95em; /* Slightly smaller instructions */
+}
+
+/* Icon buttons in the header */
+.icon-button {
+    border-radius: 50%; /* Made fully rounded */
+    cursor: pointer;
+    width: 35px; /* 30% bigger than 27px (27 * 1.3 = 35.1) */
+    height: 35px; /* 30% bigger than 27px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out;
+    margin: 0; /* Removed margin here, relying on parent's gap */
+
+    /* Removed 3D effect */
+    box-shadow: none;
+    border-bottom: none;
+}
+
+/* Updated button colors */
+#statsButton {
+    background-color: #FF99AA; /* More saturated pink */
+}
+
+#howToPlayButton {
+    background-color: #87CEEB; /* Sky blue */
+}
+
+.icon-button:active {
+    transform: translateY(0); /* No movement on press for cleaner look */
+    box-shadow: none;
+    border-bottom: none;
+}
+/* Updated active states for buttons */
+#statsButton:active {
+    background-color: #E07788; /* Darker more saturated pink on press */
+}
+#howToPlayButton:active {
+    background-color: #6DA0CC; /* Darker sky blue on press */
+}
+
+.icon-button:hover {
+    opacity: 0.8; /* Subtle hover effect */
+}
+
+.icon-button svg {
+    fill: #ffffff;
+    width: 19.5px; /* 30% bigger than 15px (15 * 1.3 = 19.5) */
+    height: 19.5px; /* 30% bigger than 15px */
+}
+
+/* Emoji phrase display area */
+.emoji-phrase {
+    font-size: 3.5em; /* Slightly smaller emoji size */
+    margin-bottom: 25px; /* Adjusted margin */
+    padding: 15px; /* Reduced padding */
+    background-color: #333333;
+    border-radius: 10px;
+    display: inline-block;
+    white-space: nowrap;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    user-select: none;
+}
+
+/* Guess grid container */
+.guesses-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* Reduced gap for less vertical space */
+    margin-bottom: 15px; /* Adjusted margin */
+    min-height: 200px; /* Adjusted min-height */
+    max-height: 300px; /* Adjusted max-height */
+    overflow-y: hidden;
+    align-items: center;
+}
+
+/* Individual guess row within the grid */
+.guess-row {
+    display: flex;
+    gap: 5px; /* Reduced gap */
+    justify-content: center;
+    width: 100%;
+    padding: 2px 0; /* Reduced padding for less vertical space */
+}
+
+/* Styles for individual letter boxes */
+.letter-box {
+    width: 40px; /* Smaller width */
+    height: 40px; /* Smaller height */
+    border: 2px solid #5a5a5a;
+    background-color: #1a1a1b;
+    color: #ffffff;
+    font-size: 1.4em; /* Smaller font size */
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    box-sizing: border-box;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Input field is now hidden but present to capture keyboard events */
+#guess-input {
+    opacity: 0;
+    position: absolute;
+    pointer-events: none; /* Prevents clicks/taps from interacting directly */
+    top: -9999px;
+    left: -9999px;
+    width: 0;
+    height: 0;
+    /* Added readonly to prevent mobile keyboard from appearing on focus */
+    /* This is the key change to allow physical keyboard but prevent mobile KB */
+    -webkit-user-select: none;  /* Disable selection on webkit browsers */
+    -moz-user-select: none;     /* Disable selection on Firefox */
+    -ms-user-select: none;      /* Disable selection on IE/Edge */
+    user-select: none;          /* Standard property */
+    caret-color: transparent;   /* Hide blinking cursor */
+}
+
+/* Styling for correct letter (sky blue) */
+.letter-box.correct {
+    background-color: #87CEEB; /* Sky blue */
+    border-color: #87CEEB; /* Sky blue */
+}
+
+/* Styling for present letter (more saturated pink) */
+.letter-box.present {
+    background-color: #FF99AA; /* More saturated pink */
+    border-color: #FF99AA; /* More saturated pink */
+}
+
+/* Styling for absent letter (grey) */
+.letter-box.absent {
+    background-color: #787c7e;
+    border-color: #787c7e;
+}
+
+/* On-screen keyboard container */
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    gap: 7px; /* Adjusted gap */
+    margin-top: 15px; /* Adjusted margin */
+    width: 100%;
+    max-width: 500px; /* Adjusted max-width */
+}
+
+/* Individual keyboard row */
+.keyboard-row {
+    display: flex;
+    gap: 5px; /* Adjusted gap */
+    justify-content: center;
+}
+
+/* Styling for individual keyboard keys */
+.key {
+    padding: 12px 8px; /* Slightly reduced padding */
+    background-color: #818384;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em; /* Slightly smaller font size */
+    font-weight: bold;
+    color: #ffffff;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background-color 0.1s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
+    text-transform: uppercase;
+    min-width: 30px; /* Reduced min-width */
+
+    /* 3D effect for keys - Adjusted shadow colors to be lighter and more pronounced */
+    box-shadow: 0px 4px 0px 0px rgba(200,200,200,0.5), /* Lighter bottom shadow */
+                0px 6px 6px -3px rgba(0,0,0,0.5); /* Soft overall shadow */
+    border-bottom: 2px solid rgba(150,150,150,0.5); /* Darker bottom edge for depth */
+}
+
+/* Hover effect for general keys - now just darkens */
+.key:hover:not([data-key="enter"]):not([data-key="backspace"]):not(.correct):not(.present):not(.absent) {
+    background-color: #707273; /* Slightly darker grey for hover */
+}
+
+/* Pressed-in effect for keys - Adjusted shadow colors to be lighter */
+.key:active {
+    background-color: #7a7c7d; /* Slightly lighter background on press */
+    transform: translateY(2px); /* Presses further down */
+    box-shadow: 0px 2px 0px 0px rgba(200,200,200,0.5), /* Reduced lighter bottom shadow */
+                0px 3px 3px -1px rgba(0,0,0,0.5); /* Reduced overall shadow */
+    border-bottom: 1px solid rgba(150,150,150,0.5); /* Thin lighter bottom edge */
+}
+
+/* Larger keys for Enter/Backspace */
+.key.large {
+    flex-grow: 1.5;
+    min-width: 55px; /* Adjusted min-width */
+    padding: 12px 12px; /* Adjusted padding */
+}
+
+/* Style for the new "Submit" key (formerly Enter) */
+.key[data-key="enter"] {
+    background-color: #5A83A6; /* More saturated matte blue for submit button */
+    color: white;
+    box-shadow: 0px 4px 0px 0px rgba(60, 90, 120, 0.8), /* Darker shadow for depth */
+                0px 6px 6px -3px rgba(0,0,0,0.5);
+    border-bottom: 2px solid rgba(60, 90, 120, 0.7);
+}
+.key[data-key="enter"]:active {
+    background-color: #4A6C8C; /* Darker matte blue on press */
+    box-shadow: 0px 2px 0px 0px rgba(60, 90, 120, 0.8),
+                0px 3px 3px -1px rgba(0,0,0,0.5);
+    border-bottom: 1px solid rgba(60, 90, 120, 0.7);
+}
+/* Specific hover for Submit button */
+.key[data-key="enter"]:hover {
+    background-color: #6a93b6; /* Slightly lighter more saturated matte blue on hover */
+}
+
+
+/* Keyboard key states mirroring Wordle - Adjusted shadow colors for states */
+.key.correct {
+    background-color: #87CEEB; /* Sky blue */
+    color: white;
+    /* Adjusted shadow colors for sky blue */
+    box-shadow: 0px 4px 0px 0px rgba(70, 150, 190, 0.8), /* Darker blue shadow for depth */
+                0px 6px 6px -3px rgba(0,0,0,0.5);
+    border-bottom: 2px solid rgba(70, 150, 190, 0.7);
+}
+.key.correct:active {
+     background-color: #6DA0CC; /* Darker sky blue on press */
+}
+/* No hover for correct/present/absent as they have fixed colors */
+.key.correct:hover {
+    background-color: #87CEEB;
+}
+
+.key.present {
+    background-color: #FF99AA; /* More saturated pink */
+    color: white;
+    /* Adjusted shadow colors for more saturated pink */
+    box-shadow: 0px 4px 0px 0px rgba(220, 120, 130, 0.8), /* Darker pink shadow for depth */
+                0px 6px 6px -3px rgba(0,0,0,0.5);
+    border-bottom: 2px solid rgba(220, 120, 130, 0.7);
+}
+.key.present:active {
+    background-color: #E07788; /* Darker more saturated pink on press */
+}
+.key.present:hover {
+    background-color: #FF99AA;
+}
+
+.key.absent {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    box-shadow: 0px 4px 0px 0px rgba(50,50,50,0.8), /* Darker grey shadow for depth */
+                0px 6px 6px -3px rgba(0,0,0,0.5);
+    border-bottom: 2px solid rgba(50,50,50,0.7);
+}
+.key.absent:active {
+    background-color: #2a2a2a; /* Darker on press */
+}
+.key.absent:hover {
+    background-color: #3a3a3a;
+}
+
+
+/* Message display styling - This will now be for modal messages or hints */
+#message {
+    margin-top: 15px; /* Adjusted margin */
+    font-size: 1.2em; /* Slightly smaller font size */
+    font-weight: bold;
+    padding: 10px 15px; /* Adjusted padding */
+    border-radius: 8px;
+    transition: opacity 0.3s ease-in-out;
+    color: #ffffff;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.win-message {
+    background-color: #6aaa64; /* Kept original green for win message background */
+}
+
+.lose-message {
+    background-color: #a33b3b;
+}
+
+.hidden {
+    display: none !important; /* Re-added !important for proper modal hiding */
+}
+
+/* The original submit button is now hidden */
+#submit-guess {
+    display: none;
+}
+
+/* Countdown Timer Styling */
+#countdown-timer {
+    margin-bottom: 15px; /* Space between timer and emoji */
+    font-size: 1.5em; /* Larger font size */
+    color: #ffffff;
+    font-weight: bold;
+    /* Removed background, padding, border-radius, box-shadow */
+}
+
+/* Share button styling */
+.share-button {
+    background-color: #6aaa64; /* Green for share */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 20px; /* Spacing from stats */
+    transition: background-color 0.2s ease-in-out;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+    display: block; /* Make it a block element */
+    width: fit-content; /* Fit content */
+    margin-left: auto; /* Center the button */
+    margin-right: auto; /* Center the button */
+}
+
+.share-button:hover {
+    background-color: #5d975a;
+}
+.share-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+/* Clipboard message styling */
+.clipboard-message {
+    font-size: 0.9em;
+    color: #87CEEB; /* Blueish to indicate success */
+    margin-top: 10px;
+    opacity: 0; /* Starts hidden */
+    transition: opacity 0.3s ease-in-out; /* For smooth fade */
+    pointer-events: none; /* Do not block clicks when invisible */
+    position: absolute; /* Position relative to viewport */
+    top: 50%; /* Vertically center */
+    left: 50%; /* Horizontally center */
+    transform: translate(-50%, -50%); /* Adjust for element's own size */
+    white-space: nowrap; /* Keep text on one line */
+    background-color: rgba(0, 0, 0, 0.7); /* Small background for better visibility */
+    padding: 8px 15px;
+    border-radius: 5px;
+    z-index: 1001; /* Ensure it's above other elements but below modal overlay */
+}
+.clipboard-message.show {
+    opacity: 1; /* Fade in */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 15px;
+        margin: 5px;
+        max-width: 95%; /* Make it take more width on small screens */
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    p {
+        font-size: 0.85em;
+    }
+    .emoji-phrase {
+        font-size: 2.8em;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
+    .letter-box {
+        width: 36px; /* Further reduced */
+        height: 36px; /* Further reduced */
+        font-size: 1.3em;
+    }
+    .guess-row {
+        gap: 4px; /* Further reduced */
+    }
+    .key {
+        padding: 10px 4px; /* Adjusted padding for better mobile fit */
+        font-size: 0.9em;
+        min-width: unset; /* Allow flexibility */
+        border-radius: 5px;
+        box-shadow: 0px 3px 0px 0px rgba(170,170,170,0.4), 0px 5px 5px -3px rgba(0,0,0,0.5);
+        border-bottom: 2px solid rgba(100,100,100,0.5);
+    }
+    .key:active {
+        box-shadow: 0px 1px 0px 0px rgba(170,170,170,0.4), 0px 2px 2px -1px rgba(0,0,0,0.5);
+        border-bottom: 1px solid rgba(100,100,100,0.5);
+    }
+    .keyboard-row {
+        gap: 3px; /* Slightly reduced gap on mobile to save space */
+    }
+    .key.large {
+        padding: 10px 8px; /* Adjusted padding for large keys */
+        min-width: unset; /* Allow flexibility */
+    }
+    /* Responsive specific styles for Submit key */
+    .key[data-key="enter"] {
+        box-shadow: 0px 3px 0px 0px rgba(60, 90, 120, 0.8),
+                    0px 5px 5px -3px rgba(0,0,0,0.5);
+        border-bottom: 2px solid rgba(60, 90, 120, 0.7);
+    }
+    .key[data-key="enter"]:active {
+        box-shadow: 0px 1px 0px 0px rgba(60, 90, 120, 0.8),
+                    0px 2px 2px -1px rgba(0,0,0,0.5);
+        border-bottom: 1px solid rgba(60, 90, 120, 0.7);
+    }
+
+    .icon-button {
+        width: 35px;
+        height: 35px;
+        margin: 0;
+    }
+    .icon-button svg {
+        width: 19.5px;
+        height: 19.5px;
+    }
+}
+
+@media (max-width: 400px) {
+    .letter-box {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1em;
+    }
+    .guess-row {
+        gap: 3px;
+    }
+    .key {
+        padding: 7px 2px; /* Further adjusted padding for smaller keys */
+        font-size: 0.7em; /* Adjusted font size for smaller keys */
+        /* Removed min-width, allowing flex-grow to handle scaling */
+    }
+    .keyboard-row {
+        gap: 2px; /* Even smaller gap for very small screens */
+    }
+    .key.large {
+        padding: 7px 5px; /* Further adjusted padding for large keys */
+        /* Removed min-width */
+    }
+    .emoji-phrase {
+        font-size: 2.2em;
+    }
+    .icon-button {
+        width: 31px;
+        height: 31px;
+    }
+    .icon-button svg {
+        width: 17.5px;
+        height: 17.5px;
+    }
+}
+
+@media (max-width: 320px) {
+    .key {
+        padding: 6px 1px; /* Even smaller padding for extremely small screens */
+        font-size: 0.65em; /* Even smaller font size */
+    }
+    .key.large {
+        padding: 6px 4px; /* Adjusted padding for large keys on smallest screens */
+    }
+    .keyboard-row {
+        gap: 1px; /* Minimal gap for very tight spaces */
+    }
+}
+
+
+/* Modal specific styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #2a2a2c;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    max-width: 80%;
+    color: #e0e0e0;
+    position: relative;
+    transform: scale(0.8);
+    opacity: 0;
+    animation: fadeInScale 0.3s forwards ease-out;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex; /* Use flexbox for modal content */
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center horizontally */
+    justify-content: flex-start; /* Align to start vertically */
+}
+
+@keyframes fadeInScale {
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-title {
+    font-size: 1.8em;
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.modal-stats p, .modal-instructions p {
+    font-size: 1.1em;
+    margin: 8px 0;
+    color: #c0c0c0;
+}
+
+.modal-stats strong {
+    color: #ffffff;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    color: #e0e0e0;
+    cursor: pointer;
+    line-height: 1;
+    padding: 5px;
+}
+.modal-close-button:hover {
+    color: #ffffff;
+}
+
+/* Share button styling for the modal */
+#shareButton {
+    background-color: #6aaa64; /* Green for share */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 20px; /* Spacing from stats */
+    transition: background-color 0.2s ease-in-out;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+}
+
+#shareButton:hover {
+    background-color: #5d975a;
+}
+#shareButton:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+}
+
+/* How to Play specific styles */
+.modal-instructions {
+    text-align: left;
+    margin-top: 20px;
+    font-size: 1em;
+    line-height: 1.5;
+}
+.modal-instructions h3 {
+    color: #ffffff;
+    font-size: 1.4em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+.modal-instructions ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    padding-left: 0;
+}
+.modal-instructions li {
+    margin-bottom: 5px;
+}
+.modal-instructions .example-row {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 10px 0;
+}
+.modal-instructions .example-box {
+    width: 35px;
+    height: 35px;
+    border: 2px solid #5a5a5a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    border-radius: 5px;
+}
+.modal-instructions .example-box.correct { background-color: #87CEEB; border-color: #87CEEB; }
+.modal-instructions .example-box.present { background-color: #FF99AA; border-color: #FF99AA; }
+.modal-instructions .example-box.absent { background-color: #787c7e; border-color: #787c7e; }
+
+/* Site Footer */
+.site-footer {
+    margin-top: 40px;
+    padding: 30px 20px;
+    border-top: 1px solid #333;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 0.9em;
+    color: #888;
+    text-align: left; /* Improved readability for lists */
+}
+
+.footer-section {
+    flex: 1; /* Each takes equal width */
+    min-width: 150px; /* Prevents squishing on small screens */
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-section h4 {
+    color: #ffffff;
+    margin-bottom: 12px;
+    font-size: 1em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.site-footer a {
+    margin: 5px 0; /* Vertical spacing */
+    color: #b0b0b0;
+    transition: color 0.2s;
+}
+
+.site-footer a:hover {
+    color: #87CEEB;
+}
+
+.site-footer p {
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+    border-top: 1px solid #222;
+    padding-top: 20px;
+    color: #555;
+}
+
+@media (max-width: 600px) {
+    .site-footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .footer-section {
+        margin-bottom: 25px;
+    }
+}
+
+/* Progress Bar Styles */
+.progress-container {
+    width: 100%;
+    background-color: #222;
+    border-radius: 10px;
+    margin-top: 20px;
+    height: 10px;
+    overflow: hidden;
+    display: none;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #6aaa64;
+    transition: width 2s linear;
+}
+
+#success-message {
+    margin-top: 15px;
+    color: #6aaa64;
+    font-weight: bold;
+    display: none;
+}
+
+/* Archive & Hint Grid Layouts */
+.archive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.archive-item {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.archive-emoji {
+    font-size: 1.5em;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.archive-date {
+    font-size: 0.8em;
+    color: #888;
+}

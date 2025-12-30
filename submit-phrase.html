@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit a Phrase - Emotle</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5461553569029344"
+        crossorigin="anonymous"></script>
+    <link rel="icon" href="favicon-32x32.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" style="text-decoration: none;"><h1>Emotle</h1></a>
+        </div>
+        
+        <h2>Submit a Phrase</h2>
+        <div style="text-align: left; line-height: 1.6; margin-top: 20px; color: #b0b0b0;">
+            <p>Think you have a great emoji-phrase combination? Submit it here, and it might become a future Emotle of the Day!</p>
+            
+            <div style="background-color: #333; padding: 25px; border-radius: 12px; margin-top: 20px;">
+                <label style="display: block; color: white; margin-bottom: 10px;">Your Emoji clue:</label>
+                <input type="text" id="emojiInput" placeholder="🚀🌕✨" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #555; background: #222; color: #fff; margin-bottom: 20px;">
+                
+                <label style="display: block; color: white; margin-bottom: 10px;">The Answer Word:</label>
+                <input type="text" id="wordInput" placeholder="MOON" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #555; background: #222; color: #fff; margin-bottom: 20px;">
+                
+                <button class="share-button" id="submitBtn" style="width: 100%; margin-top: 10px;" onclick="handleSubmit()">Submit Suggestion</button>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div id="success-message">Email Sent!</div>
+            </div>
+            
+            <p style="margin-top: 30px;">By submitting, you agree to allow us to use your combination in the game. We curate all suggestions for quality and appropriateness.</p>
+        </div>
+        
+        <script>
+            function handleSubmit() {
+                const emoji = document.getElementById('emojiInput').value.trim();
+                const word = document.getElementById('wordInput').value.trim();
+                const btn = document.getElementById('submitBtn');
+                const progressContainer = document.getElementById('progressContainer');
+                const progressBar = document.getElementById('progressBar');
+                const successMsg = document.getElementById('success-message');
+
+                if (!emoji || !word) {
+                    alert('Please fill in both boxes!');
+                    return;
+                }
+
+                // Start animation
+                btn.style.display = 'none';
+                progressContainer.style.display = 'block';
+                
+                // Force a reflow to ensure the transition starts
+                void progressBar.offsetWidth;
+                progressBar.style.width = '100%';
+
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    successMsg.style.display = 'block';
+                    
+                    // Reset after 3 seconds to allow another submission
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                        btn.style.display = 'block';
+                        progressBar.style.width = '0%';
+                        document.getElementById('emojiInput').value = '';
+                        document.getElementById('wordInput').value = '';
+                    }, 3000);
+                }, 2000);
+            }
+        </script>
+        
+        <p style="margin-top: 40px;"><a href="index.html">&larr; Back to the game</a></p>
+    </div>
+
+    <script src="footer.js"></script>
+    <footer class="site-footer"></footer>
+</body>
+</html>

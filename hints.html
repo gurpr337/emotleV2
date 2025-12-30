@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hint Generator - Emotle</title>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5461553569029344"
+        crossorigin="anonymous"></script>
+    <link rel="icon" href="favicon-32x32.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" style="text-decoration: none;"><h1>Emotle</h1></a>
+        </div>
+        
+        <h2>Hint Generator</h2>
+        <div style="text-align: center; margin-top: 20px;">
+            <p>Need a little nudge? Here are the hints for recent puzzles.</p>
+            
+            <div class="archive-grid" id="hintGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        
+        <script src="game-data.js"></script>
+        <script>
+            function getCurrentIndex() {
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0);
+                const diffTime = Math.abs(today.getTime() - EPOCH_START_DATE.getTime());
+                const diffDays = Math.floor(diffTime / MS_PER_DAY); 
+                return diffDays % emojiPhrases.length;
+            }
+
+            function revealToday(button, hint) {
+                button.parentElement.innerHTML = `<span style="color: #FF99AA; font-size: 1.2em; font-weight: bold;">Starts with: ${hint}</span>`;
+            }
+
+            const currentIndex = getCurrentIndex();
+            const grid = document.getElementById('hintGrid');
+
+            // Show past 9 days (today + last 8) in chronological order
+            // i=0 is today, i=1 is yesterday, etc.
+            // Loop from 8 down to 0 to show oldest first
+            for (let i = 8; i >= 0; i--) {
+                let targetIndex = (currentIndex - i) % emojiPhrases.length;
+                if (targetIndex < 0) targetIndex += emojiPhrases.length;
+                
+                const p = emojiPhrases[targetIndex];
+                const hint = p.answer.charAt(0).toUpperCase();
+                
+                const item = document.createElement('div');
+                item.className = 'archive-item';
+                
+                const label = i === 0 ? "Today's Hint" : `Emotle #${targetIndex + 1}`;
+                
+                let hintContent;
+                if (i === 0) {
+                    hintContent = `
+                        <button class="share-button" style="padding: 5px 15px; font-size: 0.9em; margin-top: 5px; margin-bottom: 5px;" 
+                                onclick="revealToday(this, '${hint}')">Reveal</button>
+                    `;
+                } else {
+                    hintContent = `<span style="color: #FF99AA; font-size: 1.2em; font-weight: bold;">Starts with: ${hint}</span>`;
+                }
+
+                item.innerHTML = `
+                    <span class="archive-emoji">${p.emoji}</span>
+                    <div style="margin: 10px 0;">${hintContent}</div>
+                    <span class="archive-date" style="color: #87CEEB;">${label}</span>
+                `;
+                grid.appendChild(item);
+            }
+        </script>
+
+        <p style="margin-top: 40px;"><a href="index.html">&larr; Back to the game</a></p>
+    </div>
+
+    <script src="footer.js"></script>
+    <footer class="site-footer"></footer>
+</body>
+</html>
