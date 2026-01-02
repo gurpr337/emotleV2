@@ -33,49 +33,54 @@
                 <div id="success-message">Email Sent!</div>
             </div>
             
-            <p style="margin-top: 30px;">By submitting, you agree to allow us to use your combination in the game. We curate all suggestions for quality and appropriateness.</p>
-        </div>
-        
-        <script>
-            function handleSubmit() {
-                const emoji = document.getElementById('emojiInput').value.trim();
-                const word = document.getElementById('wordInput').value.trim();
-                const btn = document.getElementById('submitBtn');
-                const progressContainer = document.getElementById('progressContainer');
-                const progressBar = document.getElementById('progressBar');
-                const successMsg = document.getElementById('success-message');
+            <h3 style="color: #ffffff; margin-top: 30px;">Our Curation Process</h3>
+            <p style="line-height: 1.8; color: #d0d0d0;">Every phrase submitted through this form is reviewed by our editorial team. We look for emoji combinations that are challenging but fair, meaning they follow a logical thread that a player can eventually deduce. By submitting, you grant Emotle the right to use, modify, and publish your combination as part of our daily or practice puzzles.</p>
 
-                if (!emoji || !word) {
-                    alert('Please fill in both boxes!');
-                    return;
-                }
+            <h4 style="color: #ffffff; margin-top: 20px;">What Makes a Good Emotle?</h4>
+            <p style="line-height: 1.8; color: #d0d0d0;">The best Emotles often fall into one of three categories: literal representations (e.g., 🍎 = APPLE), action sequences (e.g., 🏃🏃🏁 = RACING), or conceptual mashups (e.g., 👑🎤 = QUEEN). We encourage you to experiment with different lengths—while single-word answers are the most common, we are always on the lookout for punchy, high-impact phrases!</p>
+            
+            <script>
+                function handleSubmit() {
+                    const emoji = document.getElementById('emojiInput').value.trim();
+                    const word = document.getElementById('wordInput').value.trim();
+                    const btn = document.getElementById('submitBtn');
+                    const progressContainer = document.getElementById('progressContainer');
+                    const progressBar = document.getElementById('progressBar');
+                    const successMsg = document.getElementById('success-message');
 
-                // Start animation
-                btn.style.display = 'none';
-                progressContainer.style.display = 'block';
-                
-                // Force a reflow to ensure the transition starts
-                void progressBar.offsetWidth;
-                progressBar.style.width = '100%';
+                    if (!emoji || !word) {
+                        alert('Please fill in both boxes!');
+                        return;
+                    }
 
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    successMsg.style.display = 'block';
+                    // Start animation
+                    btn.style.display = 'none';
+                    progressContainer.style.display = 'block';
                     
-                    // Reset after 3 seconds to allow another submission
+                    // Force a reflow to ensure the transition starts
+                    void progressBar.offsetWidth;
+                    progressBar.style.width = '100%';
+
                     setTimeout(() => {
-                        successMsg.style.display = 'none';
-                        btn.style.display = 'block';
-                        progressBar.style.width = '0%';
-                        document.getElementById('emojiInput').value = '';
-                        document.getElementById('wordInput').value = '';
-                    }, 3000);
-                }, 2000);
-            }
-        </script>
-        
-        <p style="margin-top: 40px;"><a href="index.html">&larr; Back to the game</a></p>
-    </div>
+                        progressContainer.style.display = 'none';
+                        successMsg.style.display = 'block';
+                        
+                        // Reset after 3 seconds to allow another submission
+                        setTimeout(() => {
+                            successMsg.style.display = 'none';
+                            btn.style.display = 'block';
+                            progressBar.style.width = '0%';
+                            document.getElementById('emojiInput').value = '';
+                            document.getElementById('wordInput').value = '';
+                        }, 3000);
+                    }, 2000);
+                }
+            </script>
+
+            <p style="margin-top: 40px; text-align: center;">
+                <a href="index.html" style="background-color: #5a5a5a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; border: 1px solid #777;">&larr; Return to Game</a>
+            </p>
+        </div>
 
     <script src="footer.js"></script>
     <footer class="site-footer"></footer>

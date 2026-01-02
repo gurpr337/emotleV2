@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="footer-section">
             <h4>Help & Hints</h4>
             <a href="how-to-play.html">How to Play</a>
+            <a href="tips.html">Tips & Tricks</a>
             <a href="hints.html">Hints</a>
             <a href="emoji-dictionary.html">Emoji Dictionary</a>
             <a href="faq.html">FAQ</a>
